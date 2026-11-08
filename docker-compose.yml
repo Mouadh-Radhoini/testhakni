@@ -1,0 +1,27 @@
+# Environnement de developpement : MongoDB (DB-01)
+# Lancer :   docker compose up -d
+# Arreter :  docker compose down        (les donnees restent dans le volume)
+# Tout effacer : docker compose down -v
+#
+# Si le port 27017 est deja pris sur ta machine (autre projet Mongo), choisis-en un autre :
+#   PowerShell : $env:MONGO_PORT = "27018"; docker compose up -d
+#   puis cote backend : $env:MONGODB_URI = "mongodb://localhost:27018/testhakni"
+services:
+  mongodb:
+    image: mongo:8.0
+    container_name: testhakni-mongodb
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MONGO_PORT:-27017}:27017"
+    environment:
+      MONGO_INITDB_DATABASE: testhakni
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo-data:

@@ -1,0 +1,28 @@
+<main class="home">
+  <h1>Local Services Marketplace</h1>
+  <p class="lead">Trouvez un prestataire près de chez vous : plombier, électricien, ménage, jardinage…</p>
+
+  <form class="search" (ngSubmit)="search()">
+    <input name="q" [(ngModel)]="query" placeholder="De quoi avez-vous besoin ?" aria-label="Rechercher un service" />
+    <button class="btn" type="submit">Rechercher</button>
+  </form>
+
+  <div class="row cta">
+    @if (!auth.isLoggedIn()) {
+      <a class="btn secondary" routerLink="/register/customer">Je cherche un service</a>
+      <a class="btn secondary" routerLink="/register/provider">Je propose mes services</a>
+    } @else if (auth.role() === 'PROVIDER') {
+      <a class="btn secondary" routerLink="/provider/services">Gérer mes services</a>
+    } @else if (auth.role() === 'CUSTOMER') {
+      <a class="btn secondary" routerLink="/requests/new">Publier une demande</a>
+    }
+  </div>
+
+  <p class="api" [class]="apiState()">
+    @switch (apiState()) {
+      @case ('loading') { Connexion à l'API… }
+      @case ('up') { API connectée ✔ }
+      @case ('down') { API injoignable : lancez le backend (port 8080) }
+    }
+  </p>
+</main>

@@ -1,0 +1,28 @@
+.topbar {
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.nav {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0.7rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1.1rem;
+
+  a { color: var(--c-text); font-weight: 500; }
+  a.active { color: var(--c-primary); }
+  a.btn { color: #fff; }
+}
+
+.brand { font-weight: 800 !important; font-size: 1.1rem; margin-right: 0.5rem; }
+.who { display: inline-flex; gap: 0.4rem; align-items: center; }
+
+main { min-height: calc(100vh - 120px); }
+
+.footer { text-align: center; padding: 1.5rem; }

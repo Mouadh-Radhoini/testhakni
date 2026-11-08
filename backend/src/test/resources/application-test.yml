@@ -1,0 +1,17 @@
+# Profil de test : base separee, videe avant chaque test d'integration
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_TEST_URI:mongodb://localhost:27017/testhakni_test}
+
+app:
+  seed:
+    enabled: false
+  jwt:
+    secret: dGVzdC1vbmx5LXNlY3JldC1mb3ItdW5pdC1hbmQtaW50ZWdyYXRpb24tdGVzdHMtMTIzNDU2Nzg5MA==
+    access-token-ttl: 5m
+    refresh-token-ttl: 1h
+
+logging:
+  level:
+    org.mongodb.driver: WARN

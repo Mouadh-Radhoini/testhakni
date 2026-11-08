@@ -1,0 +1,5 @@
+# Fichiers locaux (configuration de l'outil, propre a chaque PC)
+.claude/
+.env
+.DS_Store
+Thumbs.db
