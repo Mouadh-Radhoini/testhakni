@@ -10,7 +10,7 @@ Le client cherche un service et publie une demande ; le prestataire publie ses s
 | Base de données | MongoDB 8 | `docker-compose.yml` |
 | CI | GitHub Actions | `.github/workflows/ci.yml` |
 
-Documentation projet : [`docs/`](docs). Le plan des sprints est dans [SPRINT_PLAN.md](docs/SPRINT_PLAN.md) et le compte rendu des Sprints 1 et 2 dans [BILAN_SPRINTS_1_2.md](docs/BILAN_SPRINTS_1_2.md).
+Documentation projet : [`docs/`](docs). L'architecture est décrite, schémas à l'appui, dans [ARCHITECTURE.md](docs/ARCHITECTURE.md). Le plan des sprints est dans [SPRINT_PLAN.md](docs/SPRINT_PLAN.md) et le compte rendu des Sprints 1 et 2 dans [BILAN_SPRINTS_1_2.md](docs/BILAN_SPRINTS_1_2.md).
 
 ## Démarrage rapide (Windows / PowerShell)
 
