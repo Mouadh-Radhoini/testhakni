@@ -1,0 +1,32 @@
+<header class="topbar">
+  <nav class="nav">
+    <a routerLink="/" class="brand">🛠️ LocalServices</a>
+    <a routerLink="/services" routerLinkActive="active">Trouver un service</a>
+
+    @if (auth.role() === 'CUSTOMER') {
+      <a routerLink="/requests" routerLinkActive="active">Mes demandes</a>
+    }
+    @if (auth.role() === 'PROVIDER') {
+      <a routerLink="/provider/services" routerLinkActive="active">Mes services</a>
+      <a routerLink="/provider/profile" routerLinkActive="active">Profil pro</a>
+    }
+
+    <span class="spacer"></span>
+
+    @if (auth.user(); as user) {
+      <a routerLink="/account" routerLinkActive="active" class="who">
+        {{ user.firstName }} <span class="badge">{{ user.role }}</span>
+      </a>
+      <button type="button" class="btn secondary small" (click)="auth.logout()">Déconnexion</button>
+    } @else {
+      <a routerLink="/login" routerLinkActive="active">Connexion</a>
+      <a routerLink="/register" class="btn small">Inscription</a>
+    }
+  </nav>
+</header>
+
+<main>
+  <router-outlet />
+</main>
+
+<footer class="footer muted small">Local Services Marketplace — projet de fin d'études</footer>

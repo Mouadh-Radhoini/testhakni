@@ -1,0 +1,29 @@
+.home {
+  max-width: 720px;
+  margin: 4rem auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.lead { color: var(--c-muted); font-size: 1.1rem; }
+
+.search {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.5rem 0 1rem;
+  input { flex: 1; padding: 0.75rem 1rem; }
+}
+
+.cta { justify-content: center; }
+
+.api {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+
+  &.loading { background: #eef; }
+  &.up { background: #e6f6ea; color: #1b6b32; }
+  &.down { background: #fdecea; color: #a1261b; }
+}

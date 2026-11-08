@@ -1,0 +1,10 @@
+# Profil de developpement (actif par defaut)
+app:
+  seed:
+    # Insere des comptes et services de demonstration si la base est vide (voir DataSeeder)
+    enabled: ${SEED_ENABLED:true}
+    password: ${SEED_PASSWORD:Password123!}
+
+logging:
+  level:
+    com.testhakni: DEBUG

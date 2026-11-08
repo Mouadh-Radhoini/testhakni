@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: testhakni-backend
+  profiles:
+    # Profil utilise si SPRING_PROFILES_ACTIVE n'est pas defini
+    default: dev
+  data:
+    mongodb:
+      # Surchargeable avec la variable d'environnement MONGODB_URI (ex. MongoDB Atlas)
+      uri: ${MONGODB_URI:mongodb://localhost:27017/testhakni}
+      # Cree les index declares avec @Indexed / @CompoundIndex (email unique, etc.)
+      auto-index-creation: true
+
+server:
+  port: ${PORT:8080}
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+  jwt:
+    # Cle HMAC encodee en Base64 (>= 256 bits). A REMPLACER en production via JWT_SECRET.
+    secret: ${JWT_SECRET:ZGV2LW9ubHktc2VjcmV0LWNoYW5nZS1tZS1sb2NhbC1zZXJ2aWNlcy1tYXJrZXRwbGFjZS0yMDI2}
+    access-token-ttl: ${JWT_ACCESS_TTL:15m}
+    refresh-token-ttl: ${JWT_REFRESH_TTL:7d}
+  seed:
+    enabled: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
