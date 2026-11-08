@@ -17,7 +17,9 @@ jobs:
         working-directory: backend
     services:
       mongodb:
-        image: mongo:8.0
+        # 7.0 et non 8.0 : l'image 8.0 refuse de demarrer sur les runners GitHub
+        # (kernel Linux >= 6.19, incompatibilite connue MongoDB SERVER-121912).
+        image: mongo:7.0
         ports:
           - 27017:27017
         options: >-
