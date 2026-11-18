@@ -1,5 +1,7 @@
 # Profil de developpement (actif par defaut)
 app:
+  jwt:
+    secret: ${JWT_SECRET:ZGV2LW9ubHktc2VjcmV0LWNoYW5nZS1tZS1sb2NhbC1zZXJ2aWNlcy1tYXJrZXRwbGFjZS0yMDI2}
   seed:
     # Insere des comptes et services de demonstration si la base est vide (voir DataSeeder)
     enabled: ${SEED_ENABLED:true}

@@ -15,6 +15,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 /** Reponses JSON standardisees pour 401 (non authentifie) et 403 (role insuffisant). AUTH-06 / AUTH-08 */
+@lombok.extern.slf4j.Slf4j
 @Component
 public class JsonSecurityHandlers implements AuthenticationEntryPoint, AccessDeniedHandler {
 
@@ -41,6 +42,7 @@ public class JsonSecurityHandlers implements AuthenticationEntryPoint, AccessDen
 
     private void write(HttpServletResponse response, HttpServletRequest request, HttpStatus status, String message)
             throws IOException {
+        log.warn("security decision=denied method={} status={}", request.getMethod(), status.value());
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");

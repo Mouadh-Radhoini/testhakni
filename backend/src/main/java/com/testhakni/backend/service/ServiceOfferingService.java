@@ -76,6 +76,7 @@ public class ServiceOfferingService {
         return toResponse(serviceRepository.save(service));
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public ServiceResponse update(String providerId, String serviceId, ServicePayload payload) {
         ServiceOffering service = loadOwned(providerId, serviceId);
         apply(service, payload);
@@ -83,6 +84,7 @@ public class ServiceOfferingService {
     }
 
     /** Le prestataire peut activer / desactiver son service, mais pas lever une suspension admin. */
+    @org.springframework.transaction.annotation.Transactional
     public ServiceResponse changeStatus(String providerId, String serviceId, ServiceStatus status) {
         if (status == ServiceStatus.SUSPENDED) {
             throw ApiException.badRequest("Statut autorise : ACTIVE ou INACTIVE");

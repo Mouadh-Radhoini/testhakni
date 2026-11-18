@@ -17,12 +17,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 /**
  * Securite de l'API : stateless + JWT. Matrice d'autorisation par role. AUTH-06 / AUTH-08
  *
- * <pre>
- * Public          : /api/health, /api/auth/**, GET /api/services/**, GET /api/categories, GET /api/providers/{id}
- * Authentifie     : /api/users/me
- * PROVIDER        : /api/providers/me/**, GET /api/services/mine, POST/PUT/PATCH/DELETE /api/services/**
- * CUSTOMER        : /api/requests/**
- * </pre>
+ * Les opérations du parcours de réservation sont limitées aux participants.
+ * Les contrôleurs utilisent les identités JWT et les services vérifient la propriété.
+ * Les routes /api/admin/** exigent toujours le rôle ADMIN.
  * L'ordre des regles compte : la premiere qui correspond s'applique.
  */
 @Configuration
@@ -51,6 +48,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/services/**").hasRole("PROVIDER")
                 .requestMatchers(HttpMethod.PATCH, "/api/services/**").hasRole("PROVIDER")
                 .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasRole("PROVIDER")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/requests/*/offers").hasRole("PROVIDER")
+                .requestMatchers("/api/bookings/*/status").hasRole("PROVIDER")
+                .requestMatchers("/api/bookings/*/confirm", "/api/bookings/*/review").hasRole("CUSTOMER")
+                .requestMatchers("/api/bookings/**").hasAnyRole("CUSTOMER", "PROVIDER")
+                .requestMatchers(HttpMethod.GET, "/api/providers/*/reviews").permitAll()
                 // Catalogue public
                 .requestMatchers(HttpMethod.GET, "/api/services/**", "/api/categories", "/api/providers/*").permitAll()
                 // Client : ses demandes

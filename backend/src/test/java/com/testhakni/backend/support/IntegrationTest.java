@@ -42,6 +42,9 @@ public abstract class IntegrationTest {
 
     @BeforeEach
     void cleanDatabase() {
+        if (!"testhakni_test".equals(mongoTemplate.getDb().getName())) {
+            throw new IllegalStateException("Les tests exigent la base dédiée testhakni_test");
+        }
         mongoTemplate.getCollectionNames().stream()
                 .filter(name -> !name.startsWith("system."))
                 .forEach(name -> mongoTemplate.remove(new Query(), name));

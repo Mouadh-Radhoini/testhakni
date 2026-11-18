@@ -25,6 +25,7 @@ public class UserService {
         return UserResponse.from(load(userId));
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public UserResponse updateMe(String userId, UpdateProfileRequest req) {
         User user = load(userId);
         user.setFirstName(req.firstName().trim());
@@ -34,6 +35,7 @@ public class UserService {
         return UserResponse.from(userRepository.save(user));
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void changePassword(String userId, ChangePasswordRequest req) {
         User user = load(userId);
         if (!passwordEncoder.matches(req.currentPassword(), user.getPasswordHash())) {
