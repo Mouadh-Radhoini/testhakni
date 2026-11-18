@@ -67,7 +67,7 @@ export class Login {
     this.auth.login(email, password).subscribe({
       next: (res) => {
         this.loading.set(false);
-        const fallback = res.user.role === 'PROVIDER' ? '/provider/services' : '/services';
+        const fallback = ({ADMIN: '/admin/dashboard', PROVIDER: '/provider/services', CUSTOMER: '/services'})[res.user.role];
         this.router.navigateByUrl(this.returnUrl() || fallback);
       },
       error: (e) => {

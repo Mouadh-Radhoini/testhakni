@@ -121,6 +121,8 @@ export interface ProviderPublic {
   yearsOfExperience: number | null;
   available: boolean;
   memberSince: string;
+  averageRating: number | null;
+  reviewCount: number;
   services: Service[];
 }
 
