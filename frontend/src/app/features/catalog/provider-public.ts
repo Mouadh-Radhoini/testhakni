@@ -1,3 +1,4 @@
+import { ReviewsPanel } from '../marketplace/reviews';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -11,7 +12,7 @@ import { ServiceCard } from '../../shared/service-card';
 /** Profil public d'un prestataire et ses services (PROV-03 / SEARCH-04). FE-06 */
 @Component({
   selector: 'app-provider-public',
-  imports: [RouterLink, DatePipe, ServiceCard],
+  imports: [ReviewsPanel, RouterLink, DatePipe, ServiceCard],
   template: `
     <section class="container">
       @if (error()) {
@@ -48,6 +49,7 @@ import { ServiceCard } from '../../shared/service-card';
             @for (s of p.services; track s.id) { <app-service-card [service]="s" /> }
           </div>
         }
+        <app-reviews group="providers" [id]="p.providerId"/>
       } @else {
         <p class="muted">Chargement…</p>
       }

@@ -5,7 +5,7 @@ API REST Spring Boot 3.5 (Java 21) + MongoDB, sécurisée par JWT.
 ## Prérequis
 - **JDK 21** (Java 8 ne marche pas avec Spring Boot 3). Si Java 8 est le défaut du PC : `. .\scripts\java21.ps1` depuis la racine du projet.
 - Pas besoin d'installer Maven : le wrapper `mvnw` le télécharge.
-- MongoDB sur `localhost:27017` : `docker compose up -d` à la racine du projet.
+- MongoDB sur `localhost:27017` : `docker compose up -d --wait` à la racine du projet.
 
 ## Lancer
 ```bash
@@ -27,6 +27,7 @@ cd backend
 | Profil | Quand | Effet |
 |---|---|---|
 | `dev` | par défaut | données de démo (seed) si la base est vide, logs DEBUG |
+| `prod` | pile de production | secret JWT externe obligatoire, sans seed |
 | `test` | tests automatiques | base `testhakni_test`, pas de seed |
 
 | Variable | Défaut | Rôle |
@@ -34,12 +35,12 @@ cd backend
 | `MONGODB_URI` | `mongodb://localhost:27017/testhakni` | Connexion MongoDB |
 | `PORT` | `8080` | Port de l'API |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:4200` | Origines autorisées (frontend) |
-| `JWT_SECRET` | clé de dev | Clé HMAC en Base64 (≥ 256 bits). **À changer en production** |
+| `JWT_SECRET` | clé de dev | Clé HMAC en Base64 (≥ 256 bits). **Obligatoire en production** |
 | `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | `15m` / `7d` | Durée de vie des tokens |
 | `SEED_ENABLED` / `SEED_PASSWORD` | `true` / `Password123!` | Données de démo (profil dev) |
 | `MONGODB_TEST_URI` | `mongodb://localhost:27017/testhakni_test` | Base des tests |
 
-## Endpoints (Sprint 2)
+## Endpoints de compte, catalogue et demandes
 | Méthode | URL | Accès | Rôle |
 |---|---|---|---|
 | POST | `/api/auth/register/customer` | public | Inscription client |
@@ -78,3 +79,30 @@ com.testhakni.backend
 ├── exception/    format d'erreur unique (ApiError) + handler global
 └── seed/         données de démonstration (profil dev)
 ```
+
+## API du parcours de réservation
+
+Swagger expose les schémas, paramètres, validations et méthodes à `/v3/api-docs` et permet de les essayer depuis `/swagger-ui.html`. Préfixer les chemins ci-dessous avec `/api`.
+
+| Méthode et chemin | Accès et résultat |
+|---|---|
+| GET `/providers/me/requests` | Prestataire disponible, demandes ouvertes de sa ville et de ses catégories. Adresse exacte et identifiant du client exclus. |
+| POST `/requests/{id}/offers` | Prestataire éligible. Corps `price, proposedDate, description`. Une offre par couple demande/prestataire. |
+| GET `/providers/me/offers`, PATCH `/providers/me/offers/{id}/withdraw` | Lister ses propositions, retirer une offre en attente. |
+| GET `/requests/{id}/offers` | Client propriétaire, liste triée par prix, avec prestataire, date et description. |
+| POST `/requests/{id}/offers/{offerId}/accept` | Client propriétaire. Retourne la réservation, rejette les concurrentes. Un nouvel essai sur le gagnant retrouve la réservation en cours. |
+| GET `/bookings`, GET `/bookings/{id}` | Client ou prestataire participant uniquement. |
+| PATCH `/bookings/{id}/status` | Prestataire affecté. Corps `status`. BOOKED → IN_PROGRESS → AWAITING_CONFIRMATION. |
+| POST `/bookings/{id}/confirm` | Client propriétaire. Passe la réservation et la demande à COMPLETED. |
+| POST `/bookings/{id}/review` | Client après confirmation. Corps `rating, comment`. Un avis par réservation. |
+| GET `/providers/{id}/reviews`, GET `/services/{id}/reviews` | Public. Avis visibles, nombre et moyenne. Le profil prestataire inclut aussi `reviewCount, averageRating`. |
+| GET `/notifications?page=0`, GET `/notifications/unread`, PATCH `/notifications/{id}/read` | Utilisateur connecté. Pages de 30 éléments, nombre non lu et lecture idempotente, limités au destinataire. |
+| POST `/reports` | Utilisateur connecté. Corps `targetType` (SERVICE ou REVIEW), `targetId, reason`. |
+| GET `/admin/dashboard` | ADMIN. Nombre d’utilisateurs, services, demandes, offres, réservations, avis et signalements ouverts. |
+| GET `/admin/users?role=&status=`, GET `/admin/users/{id}`, PATCH `/admin/users/{id}` | ADMIN. Filtres optionnels. Activation/suspension avec `enabled, reason`. |
+| GET `/admin/services`, GET `/admin/reviews`, PATCH `/admin/services/{id}`, PATCH `/admin/reviews/{id}` | ADMIN. Modération avec `enabled, reason`, décision et auteur audités. |
+| GET `/admin/reports`, PATCH `/admin/reports/{id}` | ADMIN. Clôturer par `status` (RESOLVED ou DISMISSED) et `reason`. |
+
+L’annulation existante `PATCH /requests/{id}/cancel` annule aussi les offres en attente. Les notifications persistées concernent le client pour une offre reçue ou retirée, les prestataires pour les décisions ou l’annulation, l’autre participant pour les changements de réservation, le prestataire pour un nouvel avis et l’auteur pour une modération.
+
+Pour le déploiement, les variables de la pile, les backups et le dépannage, consulter le [guide d’exploitation](../docs/EXPLOITATION.md).

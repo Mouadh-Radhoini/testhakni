@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component;
  * admin@testhakni.dev, client@testhakni.dev, plombier@testhakni.dev, menage@testhakni.dev
  */
 @Component
+@org.springframework.context.annotation.Profile("dev")
 @ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true")
 public class DataSeeder implements CommandLineRunner {
 

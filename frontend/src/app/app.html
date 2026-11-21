@@ -8,9 +8,14 @@
     }
     @if (auth.role() === 'PROVIDER') {
       <a routerLink="/provider/services" routerLinkActive="active">Mes services</a>
+      <a routerLink="/provider/requests">Demandes ouvertes</a>
+      <a routerLink="/provider/offers">Mes offres</a>
       <a routerLink="/provider/profile" routerLinkActive="active">Profil pro</a>
     }
 
+    @if (auth.hasRole('CUSTOMER','PROVIDER')) { <a routerLink="/bookings">Réservations</a> }
+    @if (auth.role() === 'ADMIN') { <a routerLink="/admin/dashboard">Administration</a> }
+    @if (auth.user()) { <app-notification-bell/> }
     <span class="spacer"></span>
 
     @if (auth.user(); as user) {

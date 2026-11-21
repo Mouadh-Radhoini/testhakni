@@ -33,6 +33,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiError> handleApi(ApiException ex, HttpServletRequest req) {
+        if (ex.getStatus().value() == 401 || ex.getStatus().value() == 403) {
+            log.warn("security decision=denied method={} status={}", req.getMethod(), ex.getStatus().value());
+        }
         return build(ex.getStatus(), ex.getMessage(), req);
     }
 
@@ -91,6 +94,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.FORBIDDEN, "Acces refuse", req);
     }
 
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiError> handleUnsupportedMedia(HttpServletRequest req) {
+        return build(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Type de contenu non pris en charge", req);
+    }
+
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiError> handleMethod(HttpRequestMethodNotSupportedException ex, HttpServletRequest req) {
         return build(HttpStatus.METHOD_NOT_ALLOWED, "Methode HTTP non supportee", req);
@@ -103,7 +111,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception ex, HttpServletRequest req) {
-        log.error("Erreur inattendue sur {} {}", req.getMethod(), req.getRequestURI(), ex);
+        for (Throwable cause = ex; cause != null; cause = cause.getCause()) {
+            if (cause instanceof com.mongodb.MongoException mongo && mongo.hasErrorLabel("TransientTransactionError")) {
+                return build(HttpStatus.CONFLICT, "Modification concurrente, actualisez la page", req);
+            }
+        }
+        log.error("Erreur interne : méthode={} exception={}", req.getMethod(), ex.getClass().getSimpleName());
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur interne du serveur", req);
     }
 

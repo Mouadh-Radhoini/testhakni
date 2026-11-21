@@ -23,7 +23,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Local Services Marketplace API")
                         .description("API REST de la marketplace de services locaux")
-                        .version("0.2.0"))
+                        .version("0.4.0"))
                 .components(new Components().addSecuritySchemes(BEARER, new SecurityScheme()
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("bearer")

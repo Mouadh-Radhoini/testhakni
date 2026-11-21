@@ -1,5 +1,6 @@
 package com.testhakni.backend.service;
 
+import com.testhakni.backend.dto.RatingSummary;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +27,11 @@ public class ProviderProfileService {
     private final UserRepository userRepository;
     private final ServiceOfferingRepository serviceRepository;
 
+    private final com.testhakni.backend.repository.ReviewRepository reviews;
+
     public ProviderProfileService(ProviderProfileRepository profileRepository, UserRepository userRepository,
-                                  ServiceOfferingRepository serviceRepository) {
+                                  ServiceOfferingRepository serviceRepository, com.testhakni.backend.repository.ReviewRepository reviews) {
+        this.reviews = reviews;
         this.profileRepository = profileRepository;
         this.userRepository = userRepository;
         this.serviceRepository = serviceRepository;
@@ -71,10 +75,12 @@ public class ProviderProfileService {
                 .findByProviderIdAndStatusOrderByCreatedAtDesc(providerId, ServiceStatus.ACTIVE)
                 .stream().map(s -> ServiceResponse.from(s, summary)).toList();
 
+        var rating = reviews.rating(providerId);
         return new ProviderPublicResponse(providerId, displayName(user), profile.getBusinessName(),
                 profile.getBio(), profile.getCategories(), profile.getSkills(), profile.getCity(),
                 profile.getServiceArea(), profile.getYearsOfExperience(), profile.isAvailable(),
-                user.getCreatedAt(), services);
+                user.getCreatedAt(), services, rating.map(RatingSummary::average).orElse(null),
+                rating.map(RatingSummary::count).orElse(0L));
     }
 
     static ProviderSummary toSummary(ProviderProfile p) {

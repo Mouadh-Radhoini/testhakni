@@ -59,6 +59,18 @@ export const routes: Routes = [
     title: 'Prestataire' + T,
   },
 
+  { path: 'provider/requests', canActivate: [roleGuard('PROVIDER')], loadComponent: () => import('./features/marketplace/requests').then(m => m.OpenRequests) },
+  { path: 'provider/offers', canActivate: [roleGuard('PROVIDER')], loadComponent: () => import('./features/marketplace/offers').then(m => m.OffersPage) },
+  { path: 'requests/:id/offers', canActivate: [roleGuard('CUSTOMER')], loadComponent: () => import('./features/marketplace/offers').then(m => m.OffersPage) },
+  { path: 'bookings', canActivate: [roleGuard('CUSTOMER','PROVIDER')], loadComponent: () => import('./features/marketplace/bookings').then(m => m.BookingsPage) },
+  { path: 'bookings/:id', canActivate: [roleGuard('CUSTOMER','PROVIDER')], loadComponent: () => import('./features/marketplace/bookings').then(m => m.BookingsPage) },
+  { path: 'notifications', canActivate: [authGuard], loadComponent: () => import('./features/marketplace/notifications').then(m => m.NotificationsPage) },
+  { path: 'admin/dashboard', canActivate: [roleGuard('ADMIN')], data: {section:'dashboard'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
+  { path: 'admin/users', canActivate: [roleGuard('ADMIN')], data: {section:'users'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
+  { path: 'admin/services', canActivate: [roleGuard('ADMIN')], data: {section:'services'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
+  { path: 'admin/reviews', canActivate: [roleGuard('ADMIN')], data: {section:'reviews'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
+  { path: 'admin/reports', canActivate: [roleGuard('ADMIN')], data: {section:'reports'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
+
   // Espace prestataire (FE-04 / FE-05)
   {
     path: 'provider',

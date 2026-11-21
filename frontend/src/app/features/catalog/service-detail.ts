@@ -1,3 +1,4 @@
+import { ReviewsPanel } from '../marketplace/reviews';
 import { DatePipe } from '@angular/common';
 import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -11,7 +12,7 @@ import { PricePipe } from '../../shared/price.pipe';
 /** Detail d'un service + bouton "Faire une demande" (SEARCH-03). FE-06 */
 @Component({
   selector: 'app-service-detail',
-  imports: [RouterLink, PricePipe, DatePipe],
+  imports: [ReviewsPanel, RouterLink, PricePipe, DatePipe],
   template: `
     <section class="container">
       <p><a routerLink="/services">← Retour aux résultats</a></p>
@@ -60,6 +61,7 @@ import { PricePipe } from '../../shared/price.pipe';
             }
           </aside>
         </div>
+        <app-reviews group="services" [id]="s.id"/>
       } @else {
         <p class="muted">Chargement…</p>
       }

@@ -21,5 +21,5 @@ public record ProviderPublicResponse(
         Integer yearsOfExperience,
         boolean available,
         Instant memberSince,
-        List<ServiceResponse> services) {
+        List<ServiceResponse> services, Double averageRating, long reviewCount) {
 }

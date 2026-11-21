@@ -20,8 +20,11 @@ public class ServiceRequestService {
     private final ServiceRequestRepository requestRepository;
     private final ServiceOfferingRepository serviceRepository;
 
+    private final OfferService offers;
+
     public ServiceRequestService(ServiceRequestRepository requestRepository,
-                                 ServiceOfferingRepository serviceRepository) {
+                                 ServiceOfferingRepository serviceRepository, OfferService offers) {
+        this.offers = offers;
         this.requestRepository = requestRepository;
         this.serviceRepository = serviceRepository;
     }
@@ -62,12 +65,14 @@ public class ServiceRequestService {
     }
 
     /** Annulation possible tant que la demande est OPEN. */
+    @org.springframework.transaction.annotation.Transactional
     public RequestResponse cancel(String customerId, String requestId) {
         ServiceRequest request = loadOwned(customerId, requestId);
         if (request.getStatus() != RequestStatus.OPEN) {
             throw ApiException.conflict("Seule une demande ouverte peut etre annulee");
         }
         request.setStatus(RequestStatus.CANCELLED);
+        offers.closeRemaining(requestId, com.testhakni.backend.model.OfferStatus.CANCELLED);
         return RequestResponse.from(requestRepository.save(request));
     }
 

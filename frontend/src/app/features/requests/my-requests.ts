@@ -55,6 +55,7 @@ import { RequestService } from '../../core/services/request.service';
                 · créée le {{ r.createdAt | date: 'dd/MM/yyyy' }}
               </p>
               <p class="desc">{{ r.description }}</p>
+              <a [routerLink]="['/requests', r.id, 'offers']">Comparer les offres</a>
               @if (r.serviceId) {
                 <a class="small" [routerLink]="['/services', r.serviceId]">Voir le service concerné</a>
               }

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 /** Inscription, connexion et renouvellement de token. AUTH-02 a AUTH-05 */
 @Service
+@lombok.extern.slf4j.Slf4j
 public class AuthService {
 
     static final String BAD_CREDENTIALS = "Email ou mot de passe incorrect";
@@ -84,6 +85,7 @@ public class AuthService {
         if (!user.isActive()) {
             throw ApiException.forbidden("Compte suspendu. Contactez l'administrateur.");
         }
+        log.info("security event=login actor={} role={}", user.getId(), user.getRole());
         return issueTokens(user);
     }
 
