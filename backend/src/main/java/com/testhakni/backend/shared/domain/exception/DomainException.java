@@ -37,4 +37,9 @@ public class DomainException extends RuntimeException {
     public static DomainException forbidden(String message) {
         return new DomainException(ErrorType.FORBIDDEN, message);
     }
+
+    /** Trop de tentatives : l'appelant doit patienter. */
+    public static DomainException tooManyRequests(String message) {
+        return new DomainException(ErrorType.TOO_MANY_REQUESTS, message);
+    }
 }

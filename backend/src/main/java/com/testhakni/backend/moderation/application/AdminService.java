@@ -12,6 +12,7 @@ import com.testhakni.backend.identity.application.dto.UserResponse;
 import com.testhakni.backend.identity.domain.model.AccountStatus;
 import com.testhakni.backend.identity.domain.model.Role;
 import com.testhakni.backend.identity.domain.model.User;
+import com.testhakni.backend.identity.domain.repository.RefreshTokenRepository;
 import com.testhakni.backend.identity.domain.repository.UserRepository;
 import com.testhakni.backend.moderation.application.dto.ModerationPayloads.Decision;
 import com.testhakni.backend.moderation.application.dto.ModerationPayloads.Resolution;
@@ -49,6 +50,7 @@ public class AdminService {
     private final ReportRepository reports;
     private final ModerationActionRepository auditLog;
     private final NotificationService notifications;
+    private final RefreshTokenRepository refreshTokens;
 
     public Map<String, Long> dashboard() {
         return Map.of("users", users.count(), "services", services.count(),
@@ -83,6 +85,7 @@ public class AdminService {
         if (user.getRole() == Role.ADMIN && !body.enabled()) throw DomainException.conflict("Compte administrateur protégé");
         var status = body.enabled() ? AccountStatus.ACTIVE : AccountStatus.SUSPENDED;
         users.updateStatus(id, status);
+        if (status == AccountStatus.SUSPENDED) refreshTokens.revokeAllForUser(id, Instant.now());
         audit(actor, "USER", id, status.name(), body.reason());
     }
 

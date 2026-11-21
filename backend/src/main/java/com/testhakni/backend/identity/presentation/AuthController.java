@@ -67,4 +67,12 @@ public class AuthController {
     public AuthResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
         return authService.refresh(request.refreshToken());
     }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Deconnexion : revoque le refresh token et sa chaine de rotation (SEC-03)")
+    @ApiResponse(responseCode = "204", description = "Session fermee (idempotent)")
+    public void logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authService.logout(request.refreshToken());
+    }
 }

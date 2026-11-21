@@ -10,6 +10,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
@@ -23,15 +25,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
+    /**
+     * L'API ne sert que du JSON : rien ne doit etre charge ni encadre. Swagger UI (dev) a besoin
+     * de ses propres scripts/styles et d'images en data:, d'ou 'self' et data:.
+     */
+    static final String CONTENT_SECURITY_POLICY = "default-src 'self'; img-src 'self' data:; "
+            + "style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; "
+            + "form-action 'self'";
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    JwtAuthenticationFilter jwtFilter,
+                                                   AuthRateLimitFilter rateLimitFilter,
                                                    JsonSecurityHandlers handlers) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(e -> e.authenticationEntryPoint(handlers).accessDeniedHandler(handlers))
+            // SEC-06 : en-tetes de securite. HSTS est envoye automatiquement sur les requetes HTTPS.
+            .headers(h -> h
+                .contentSecurityPolicy(csp -> csp.policyDirectives(CONTENT_SECURITY_POLICY))
+                .referrerPolicy(r -> r.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
+                .frameOptions(f -> f.deny())
+                .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31_536_000))
+                .addHeaderWriter(new StaticHeadersWriter("Permissions-Policy",
+                        "camera=(), microphone=(), geolocation=(), payment=()")))
             .authorizeHttpRequests(auth -> auth
                 // Technique / documentation
                 .requestMatchers("/error", "/api/health", "/actuator/health", "/actuator/info",
@@ -59,10 +79,19 @@ public class SecurityConfig {
                 // Tout le reste (ex. /api/users/me) : connecte, quel que soit le role
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .httpBasic(b -> b.disable())
             .formLogin(f -> f.disable());
         return http.build();
+    }
+
+    /** Empeche Spring Boot d'enregistrer le filtre anti force brute une 2e fois hors de la chaine. */
+    @Bean
+    public FilterRegistrationBean<AuthRateLimitFilter> rateLimitFilterRegistration(AuthRateLimitFilter filter) {
+        FilterRegistrationBean<AuthRateLimitFilter> reg = new FilterRegistrationBean<>(filter);
+        reg.setEnabled(false);
+        return reg;
     }
 
     /** Empeche Spring Boot d'enregistrer le filtre JWT une 2e fois hors de la chaine de securite. */

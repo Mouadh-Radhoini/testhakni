@@ -38,6 +38,8 @@ cd backend
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:4200` | Origines autorisées (frontend) |
 | `JWT_SECRET` | clé de dev | Clé HMAC en Base64 (≥ 256 bits). **Obligatoire en production** |
 | `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | `15m` / `7d` | Durée de vie des tokens |
+| `JWT_ISSUER` / `JWT_AUDIENCE` | `testhakni-backend` / `testhakni-web` | Claims `iss` / `aud` vérifiés à chaque requête |
+| `RATE_LIMIT_ENABLED` | `true` | Limitation anti force brute sur `/api/auth` (à couper seulement pour une démo répétée) |
 | `SEED_ENABLED` / `SEED_PASSWORD` | `true` / `Password123!` | Données de démo (profil dev) |
 | `MONGODB_TEST_URI` | `mongodb://localhost:27017/testhakni_test` | Base des tests |
 
@@ -47,7 +49,8 @@ cd backend
 | POST | `/api/auth/register/customer` | public | Inscription client |
 | POST | `/api/auth/register/provider` | public | Inscription prestataire + profil pro |
 | POST | `/api/auth/login` | public | Connexion → access + refresh token |
-| POST | `/api/auth/refresh` | public | Nouveau couple de tokens |
+| POST | `/api/auth/refresh` | public | Nouveau couple de tokens (l'ancien refresh token devient inutilisable) |
+| POST | `/api/auth/logout` | public | Révoque le refresh token et sa chaîne (204, idempotent) |
 | GET / PUT | `/api/users/me` | connecté | Lire / modifier mon compte |
 | PUT | `/api/users/me/password` | connecté | Changer mon mot de passe |
 | GET / PUT | `/api/providers/me/profile` | PROVIDER | Mon profil professionnel |
@@ -66,6 +69,19 @@ cd backend
 | PATCH | `/api/requests/{id}/cancel` | CUSTOMER (propriétaire) | Annuler une demande ouverte |
 
 Codes d'erreur : `400` données invalides (détail dans `fieldErrors`), `401` non connecté ou token invalide, `403` mauvais rôle ou ressource d'un autre utilisateur, `404` introuvable, `409` conflit (email déjà pris, demande plus ouverte).
+
+## Sécurité
+
+| Mesure | Détail |
+|---|---|
+| JWT signé HS256 | Access token 15 min, refresh token 7 jours. Chaque token porte `iss`, `aud`, `jti` et son type, tous vérifiés. Aucune donnée personnelle (email) dans le token. |
+| Identité relue en base | À chaque requête, le filtre JWT recharge le compte : suspension et changement de rôle prennent effet immédiatement. |
+| Rotation des refresh tokens | Chaque refresh token est enregistré (collection `refresh_tokens`, purgée par index TTL) et ne sert qu'une fois. Rejouer un token déjà utilisé révoque toute la session (vol présumé). |
+| Révocation | `POST /api/auth/logout`, changement de mot de passe et suspension d'un compte révoquent les refresh tokens concernés. |
+| Anti force brute (Bucket4j) | Par IP : 10 connexions/min, 10 inscriptions/h, 30 refresh/min. Par compte : 5 échecs de connexion → blocage 15 min. Réponse `429` + `Retry-After`. |
+| Mots de passe | BCrypt, politique forte (8 à 72 caractères, majuscule, minuscule, chiffre, caractère spécial). |
+| En-têtes HTTP | `Content-Security-Policy`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Permissions-Policy`, `X-Content-Type-Options`, HSTS en HTTPS. |
+| Profil `prod` | Swagger et `/v3/api-docs` désactivés, pas de seed, aucun détail d'erreur ni stack trace renvoyé. |
 
 ## Organisation du code : Clean Architecture par fonctionnalité
 

@@ -28,6 +28,17 @@ app:
     secret: ${JWT_SECRET}
     access-token-ttl: ${JWT_ACCESS_TTL:15m}
     refresh-token-ttl: ${JWT_REFRESH_TTL:7d}
+    # Claims "iss" et "aud" verifies a chaque lecture de token (SEC-05)
+    issuer: ${JWT_ISSUER:testhakni-backend}
+    audience: ${JWT_AUDIENCE:testhakni-web}
+  security:
+    # Anti force brute sur /api/auth (SEC-04) : au plus <capacity> requetes par <period>
+    rate-limit:
+      enabled: ${RATE_LIMIT_ENABLED:true}
+      login: { capacity: 10, period: 1m }        # par adresse IP
+      register: { capacity: 10, period: 1h }     # par adresse IP
+      refresh: { capacity: 30, period: 1m }      # par adresse IP
+      failed-logins: { capacity: 5, period: 15m } # echecs par compte avant blocage temporaire
   seed:
     enabled: false
 

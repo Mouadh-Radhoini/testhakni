@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -90,7 +91,8 @@ class AuthControllerTest extends IntegrationTest {
 
         Claims claims = jwtService.parse(readJson(res).get("accessToken").asText(), JwtService.TYPE_ACCESS).orElseThrow();
         assertThat(claims.get("role", String.class)).isEqualTo("PROVIDER");
-        assertThat(claims.get("email", String.class)).isEqualTo("login@mail.com");
+        assertThat(claims).doesNotContainKey("email"); // SEC-05 : pas de donnee personnelle dans le token
+        assertThat(claims.getIssuer()).isEqualTo("testhakni-backend");
         assertThat(claims.getExpiration()).isAfter(claims.getIssuedAt());
     }
 
@@ -165,5 +167,54 @@ class AuthControllerTest extends IntegrationTest {
                 .andExpect(jsonPath("$.status").value(403));
         mockMvc.perform(postJson("/api/services", Map.of("title", "x"), t))
                 .andExpect(status().isForbidden());
+    }
+
+    // ------------------------------------------------------------ SEC-03 rotation / revocation
+
+    private String refresh(String refreshToken, int expectedStatus) throws Exception {
+        return mockMvc.perform(postJson("/api/auth/refresh", Map.of("refreshToken", refreshToken), null))
+                .andExpect(status().is(expectedStatus)).andReturn().getResponse().getContentAsString();
+    }
+
+    @Test
+    void refreshTokenIsSingleUseAndReplayRevokesTheSession() throws Exception {
+        String first = registerCustomer("rotation@mail.com").get("refreshToken").asText();
+        String second = readJson(refresh(first, 200)).get("refreshToken").asText();
+        assertThat(second).isNotEqualTo(first);
+
+        refresh(first, 401);   // rejeu de l'ancien token : vol suppose
+        refresh(second, 401);  // toute la chaine est revoquee, meme le token le plus recent
+    }
+
+    @Test
+    void logoutRevokesTheRefreshToken() throws Exception {
+        String refreshToken = registerCustomer("logout@mail.com").get("refreshToken").asText();
+        mockMvc.perform(postJson("/api/auth/logout", Map.of("refreshToken", refreshToken), null))
+                .andExpect(status().isNoContent());
+        refresh(refreshToken, 401);
+        // Idempotent : une deuxieme deconnexion ne renvoie pas d'erreur
+        mockMvc.perform(postJson("/api/auth/logout", Map.of("refreshToken", refreshToken), null))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void changingPasswordClosesOtherSessions() throws Exception {
+        JsonNode auth = registerCustomer("sessions@mail.com");
+        mockMvc.perform(withToken(put("/api/users/me/password"), token(auth)).contentType(MediaType.APPLICATION_JSON)
+                        .content(json(Map.of("currentPassword", PASSWORD, "newPassword", "Nouveau123!"))))
+                .andExpect(status().isNoContent());
+        refresh(auth.get("refreshToken").asText(), 401);
+    }
+
+    // ------------------------------------------------------------ SEC-06 en-tetes
+
+    @Test
+    void responsesCarrySecurityHeaders() throws Exception {
+        mockMvc.perform(get("/api/health"))
+                .andExpect(header().string("Content-Security-Policy", containsString("frame-ancestors 'none'")))
+                .andExpect(header().string("Referrer-Policy", "no-referrer"))
+                .andExpect(header().string("X-Frame-Options", "DENY"))
+                .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                .andExpect(header().exists("Permissions-Policy"));
     }
 }

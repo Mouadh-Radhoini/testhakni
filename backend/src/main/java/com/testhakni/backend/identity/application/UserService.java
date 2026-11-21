@@ -5,9 +5,12 @@ import com.testhakni.backend.identity.application.dto.UpdateProfileRequest;
 import com.testhakni.backend.identity.application.dto.UserResponse;
 import com.testhakni.backend.identity.application.port.PasswordHasher;
 import com.testhakni.backend.identity.domain.model.User;
+import com.testhakni.backend.identity.domain.repository.RefreshTokenRepository;
 import com.testhakni.backend.identity.domain.repository.UserRepository;
 import com.testhakni.backend.shared.domain.Text;
 import com.testhakni.backend.shared.domain.exception.DomainException;
+import java.time.Instant;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +20,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
+    private final RefreshTokenRepository refreshTokens;
 
-    public UserService(UserRepository userRepository, PasswordHasher passwordHasher) {
+    public UserService(UserRepository userRepository, PasswordHasher passwordHasher,
+                       RefreshTokenRepository refreshTokens) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
+        this.refreshTokens = refreshTokens;
     }
 
     public UserResponse getMe(String userId) {
@@ -45,6 +51,8 @@ public class UserService {
         }
         user.setPasswordHash(passwordHasher.hash(req.newPassword()));
         userRepository.save(user);
+        // SEC-03 : un mot de passe change ferme toutes les autres sessions (refresh tokens revoques).
+        refreshTokens.revokeAllForUser(userId, Instant.now());
     }
 
     private User load(String userId) {

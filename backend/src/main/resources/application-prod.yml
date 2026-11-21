@@ -1,0 +1,20 @@
+# Profil de production (pile docker-compose.stack.yml)
+# Le secret JWT n'a pas de valeur par defaut : le demarrage echoue sans JWT_SECRET.
+app:
+  seed:
+    enabled: false
+  security:
+    rate-limit:
+      enabled: true
+
+# SEC-07 : pas de documentation interactive exposee publiquement en production
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+server:
+  error:
+    include-stacktrace: never
+    include-message: never

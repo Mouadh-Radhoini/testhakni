@@ -3,6 +3,8 @@ package com.testhakni.backend.identity.infrastructure.security;
 import java.io.IOException;
 import java.util.List;
 
+import com.testhakni.backend.identity.domain.model.AuthenticatedUser;
+import com.testhakni.backend.identity.domain.model.User;
 import com.testhakni.backend.identity.domain.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -40,9 +42,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             jwtService.parse(token, JwtService.TYPE_ACCESS)
-                    .map(jwtService::toPrincipal)
-                    // Le compte doit toujours exister et etre actif (ex. suspendu entre-temps)
-                    .filter(p -> userRepository.findById(p.id()).map(u -> u.isActive()).orElse(false))
+                    // Identite et role relus en base : un compte suspendu ou un role modifie
+                    // prend effet immediatement, sans attendre l'expiration du token.
+                    .flatMap(claims -> userRepository.findById(claims.getSubject()))
+                    .filter(User::isActive)
+                    .map(u -> new AuthenticatedUser(u.getId(), u.getEmail(), u.getRole()))
                     .ifPresentOrElse(principal -> {
                         var auth = new UsernamePasswordAuthenticationToken(principal, null,
                                 List.of(new SimpleGrantedAuthority("ROLE_" + principal.role().name())));

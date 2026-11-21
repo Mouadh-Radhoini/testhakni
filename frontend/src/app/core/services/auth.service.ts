@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { finalize, Observable, shareReplay, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AuthResponse, Role, ServiceCategory, User } from '../models';
@@ -33,6 +33,9 @@ export interface RegisterProvider extends RegisterCustomer {
 /**
  * Etat d'authentification (signals) + appels /api/auth. FE-02 / FE-03
  * Les tokens sont gardes dans localStorage pour survivre au rechargement de la page.
+ * Le serveur fait tourner le refresh token a chaque usage (SEC-03) : un ancien token rejoue
+ * ferme la session. On n'envoie donc jamais deux refresh en parallele, et les onglets
+ * se synchronisent via l'evenement "storage".
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -41,6 +44,18 @@ export class AuthService {
   private readonly api = `${environment.apiUrl}/auth`;
 
   private readonly state = signal<StoredAuth | null>(this.load());
+  private refreshInFlight: Observable<AuthResponse> | null = null;
+
+  constructor() {
+    // Un autre onglet a renouvele ou ferme la session : on reprend son etat.
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (event) => {
+        if (event.key === STORAGE_KEY) {
+          this.state.set(this.load());
+        }
+      });
+    }
+  }
 
   readonly user = computed(() => this.state()?.user ?? null);
   readonly isLoggedIn = computed(() => this.state() !== null);
@@ -72,11 +87,21 @@ export class AuthService {
       .pipe(tap((res) => this.save(res)));
   }
 
-  /** Echange le refresh token contre un nouveau couple de tokens. */
+  /**
+   * Echange le refresh token contre un nouveau couple de tokens.
+   * Les appels simultanes partagent la meme requete (le refresh token est a usage unique).
+   */
   refresh(): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.api}/refresh`, { refreshToken: this.refreshToken })
-      .pipe(tap((res) => this.save(res)));
+    if (!this.refreshInFlight) {
+      this.refreshInFlight = this.http
+        .post<AuthResponse>(`${this.api}/refresh`, { refreshToken: this.refreshToken })
+        .pipe(
+          tap((res) => this.save(res)),
+          finalize(() => (this.refreshInFlight = null)),
+          shareReplay(1),
+        );
+    }
+    return this.refreshInFlight;
   }
 
   /** Met a jour l'utilisateur stocke (apres modification du profil). */
@@ -87,7 +112,12 @@ export class AuthService {
     }
   }
 
+  /** Ferme la session localement et revoque le refresh token cote serveur (au mieux, sans bloquer). */
   logout(redirect = true): void {
+    const refreshToken = this.refreshToken;
+    if (refreshToken) {
+      this.http.post<void>(`${this.api}/logout`, { refreshToken }).subscribe({ error: () => undefined });
+    }
     this.state.set(null);
     try {
       localStorage.removeItem(STORAGE_KEY);
