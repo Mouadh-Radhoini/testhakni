@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 import { authGuard, guestGuard, roleGuard } from './core/guards/auth.guards';
 
-const T = ' - Local Services Marketplace';
+const T = ' · LocalServices';
 
 /** Toutes les pages sont chargees a la demande (lazy loading). FE-01 */
 export const routes: Routes = [

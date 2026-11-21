@@ -17,8 +17,8 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-register-customer',
   imports: [ReactiveFormsModule, RouterLink],
   template: `
-    <section class="container narrow">
-      <div class="card">
+    <section class="auth-shell">
+      <div class="card auth-card">
         <h1>Inscription client</h1>
         <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
           @if (error()) { <div class="alert error" role="alert">{{ error() }}</div> }
@@ -62,6 +62,11 @@ import { AuthService } from '../../core/services/auth.service';
           <p class="muted small">Vous êtes prestataire ? <a routerLink="/register/provider">Inscription prestataire</a></p>
         </form>
       </div>
+      <aside class="auth-aside" aria-hidden="true">
+        <h2>Trouvez le bon pro, sans stress</h2>
+        <p>Publiez une demande gratuitement et recevez des offres de prestataires de votre ville.</p>
+        <ul><li>Des prestataires de votre ville</li><li>Plusieurs offres à comparer</li><li>Des avis après chaque prestation</li></ul>
+      </aside>
     </section>
   `,
 })

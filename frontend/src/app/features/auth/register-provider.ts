@@ -20,8 +20,8 @@ import { CatalogService } from '../../core/services/catalog.service';
   selector: 'app-register-provider',
   imports: [ReactiveFormsModule, RouterLink],
   template: `
-    <section class="container narrow">
-      <div class="card">
+    <section class="auth-shell">
+      <div class="card auth-card">
         <h1>Inscription prestataire</h1>
         <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
           @if (error()) { <div class="alert error" role="alert">{{ error() }}</div> }
@@ -83,6 +83,11 @@ import { CatalogService } from '../../core/services/catalog.service';
           <p class="muted small">Vous cherchez un service ? <a routerLink="/register/customer">Inscription client</a></p>
         </form>
       </div>
+      <aside class="auth-aside" aria-hidden="true">
+        <h2>Développez votre activité</h2>
+        <p>Recevez des demandes près de chez vous, proposez votre prix et gagnez en visibilité grâce aux avis.</p>
+        <ul><li>Des prestataires de votre ville</li><li>Plusieurs offres à comparer</li><li>Des avis après chaque prestation</li></ul>
+      </aside>
     </section>
   `,
   styles: `fieldset { border: 0; padding: 0; margin: 0; }`,

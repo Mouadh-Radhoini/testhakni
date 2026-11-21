@@ -49,7 +49,7 @@ import { RequestService } from '../../core/services/request.service';
                 }
               </div>
               <p class="muted small">
-                {{ r.categoryLabel }} · 📍 {{ r.city }}
+                {{ r.categoryLabel }} · {{ r.city }}
                 @if (r.preferredDate) { · souhaitée le {{ r.preferredDate | date: 'dd/MM/yyyy' }} }
                 @if (r.budget !== null) { · budget {{ r.budget | number: '1.0-2' }} DT }
                 · créée le {{ r.createdAt | date: 'dd/MM/yyyy' }}

@@ -1,37 +1,97 @@
+<a class="skip" href="#contenu">Aller au contenu</a>
+
 <header class="topbar">
-  <nav class="nav">
-    <a routerLink="/" class="brand">🛠️ LocalServices</a>
-    <a routerLink="/services" routerLinkActive="active">Trouver un service</a>
+  <nav class="nav" aria-label="Navigation principale">
+    <a routerLink="/" class="brand" aria-label="LocalServices, accueil">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" rx="9" fill="currentColor"/>
+          <path d="M9 17.5 16 11l7 6.5V24h-4.5v-4h-5v4H9z" fill="#fff"/><circle cx="23" cy="9" r="3" fill="#f2a33a"/></svg>
+      </span>
+      <span>Local<strong>Services</strong></span>
+    </a>
 
-    @if (auth.role() === 'CUSTOMER') {
-      <a routerLink="/requests" routerLinkActive="active">Mes demandes</a>
-    }
-    @if (auth.role() === 'PROVIDER') {
-      <a routerLink="/provider/services" routerLinkActive="active">Mes services</a>
-      <a routerLink="/provider/requests">Demandes ouvertes</a>
-      <a routerLink="/provider/offers">Mes offres</a>
-      <a routerLink="/provider/profile" routerLinkActive="active">Profil pro</a>
-    }
+    <button type="button" class="burger btn ghost" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()"
+            aria-controls="menu" [attr.aria-label]="menuOpen() ? 'Fermer le menu' : 'Ouvrir le menu'">
+      <app-icon [name]="menuOpen() ? 'close' : 'menu'" />
+    </button>
 
-    @if (auth.hasRole('CUSTOMER','PROVIDER')) { <a routerLink="/bookings">Réservations</a> }
-    @if (auth.role() === 'ADMIN') { <a routerLink="/admin/dashboard">Administration</a> }
-    @if (auth.user()) { <app-notification-bell/> }
-    <span class="spacer"></span>
+    <div id="menu" class="menu" [class.open]="menuOpen()">
+      <div class="links">
+        <a routerLink="/services" routerLinkActive="active">Trouver un service</a>
 
-    @if (auth.user(); as user) {
-      <a routerLink="/account" routerLinkActive="active" class="who">
-        {{ user.firstName }} <span class="badge">{{ user.role }}</span>
-      </a>
-      <button type="button" class="btn secondary small" (click)="auth.logout()">Déconnexion</button>
-    } @else {
-      <a routerLink="/login" routerLinkActive="active">Connexion</a>
-      <a routerLink="/register" class="btn small">Inscription</a>
-    }
+        @if (auth.role() === 'CUSTOMER') {
+          <a routerLink="/requests" routerLinkActive="active">Mes demandes</a>
+        }
+        @if (auth.role() === 'PROVIDER') {
+          <a routerLink="/provider/services" routerLinkActive="active">Mes services</a>
+          <a routerLink="/provider/requests" routerLinkActive="active">Demandes ouvertes</a>
+          <a routerLink="/provider/offers" routerLinkActive="active">Mes offres</a>
+          <a routerLink="/provider/profile" routerLinkActive="active">Profil pro</a>
+        }
+        @if (auth.hasRole('CUSTOMER', 'PROVIDER')) {
+          <a routerLink="/bookings" routerLinkActive="active">Réservations</a>
+        }
+        @if (auth.role() === 'ADMIN') {
+          <a routerLink="/admin/dashboard" routerLinkActive="active">Administration</a>
+        }
+      </div>
+
+      <div class="account">
+        @if (auth.user(); as user) {
+          <app-notification-bell />
+          <a routerLink="/account" routerLinkActive="active" class="who" title="Mon compte">
+            <span class="avatar">{{ initials() }}</span>
+            <span class="who-text">
+              <span class="who-name">{{ user.firstName }}</span>
+              <span class="who-role">{{ roleLabel() }}</span>
+            </span>
+          </a>
+          <button type="button" class="btn secondary small" (click)="auth.logout()">
+            <app-icon name="logout" [size]="16" /> Déconnexion
+          </button>
+        } @else {
+          <a routerLink="/login" routerLinkActive="active" class="btn ghost small">Connexion</a>
+          <a routerLink="/register" class="btn small">Inscription</a>
+        }
+      </div>
+    </div>
   </nav>
 </header>
 
-<main>
+<main id="contenu" tabindex="-1">
   <router-outlet />
 </main>
 
-<footer class="footer muted small">Local Services Marketplace — projet de fin d'études</footer>
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a routerLink="/" class="brand">
+        <span class="logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="28" height="28"><rect width="32" height="32" rx="9" fill="currentColor"/>
+            <path d="M9 17.5 16 11l7 6.5V24h-4.5v-4h-5v4H9z" fill="#fff"/><circle cx="23" cy="9" r="3" fill="#f2a33a"/></svg>
+        </span>
+        <span>Local<strong>Services</strong></span>
+      </a>
+      <p>Des professionnels de confiance près de chez vous, pour tous les travaux du quotidien.</p>
+    </div>
+    <div>
+      <h4>Clients</h4>
+      <a routerLink="/services">Trouver un service</a>
+      <a routerLink="/register/customer">Créer un compte client</a>
+      <a routerLink="/requests/new">Publier une demande</a>
+    </div>
+    <div>
+      <h4>Prestataires</h4>
+      <a routerLink="/register/provider">Devenir prestataire</a>
+      <a routerLink="/provider/requests">Demandes ouvertes</a>
+      <a routerLink="/provider/services">Gérer mes services</a>
+    </div>
+    <div>
+      <h4>Plateforme</h4>
+      <span>Connexion sécurisée par JWT</span>
+      <span>Avis laissés après chaque prestation</span>
+      <span>Modération active</span>
+    </div>
+  </div>
+  <div class="footer-bottom">© {{ year }} LocalServices — Projet de fin d'études</div>
+</footer>

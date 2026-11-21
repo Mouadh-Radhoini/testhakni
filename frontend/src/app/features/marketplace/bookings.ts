@@ -9,18 +9,22 @@ import { Feedback, PageState } from './page-state';
 
 @Component({
   imports: [Feedback, RouterLink, DatePipe, ReactiveFormsModule],
+  styles: `.grow-title { flex: 1; margin: 0; } .badge { margin-left: auto; }`,
   template: `<section class="container">
     <h1>{{ id() ? 'Détail de la réservation' : 'Mes réservations' }}</h1>
     <app-feedback [state]="state" />
     @for (b of bookings(); track b.id) {
       <article class="card mb">
-        <h2>{{ b.title }}</h2>
-        <p>{{ b.price }} DT · {{ b.proposedDate }} · {{ labels[b.status] }}</p>
+        <div class="row">
+          <h2 class="grow-title">{{ b.title }}</h2>
+          <span class="badge" [class]="b.status">{{ labels[b.status] }}</span>
+        </div>
+        <p class="muted"><strong class="price">{{ b.price }} DT</strong> · Intervention le {{ b.proposedDate | date: 'dd/MM/yyyy' }}</p>
         @if (!id()) {
           <a [routerLink]="['/bookings', b.id]">Voir la réservation</a>
         } @else {
           <p>{{ b.address }}</p>
-          <ol>
+          <ol class="timeline">
             @for (h of b.history; track h.status) {
               <li>{{ labels[h.status] }} · {{ h.at | date: 'dd/MM/yyyy HH:mm' }}</li>
             }
@@ -55,7 +59,7 @@ import { Feedback, PageState } from './page-state';
               </button>
             </form>
           }
-          <a routerLink="/bookings">Toutes mes réservations</a>
+          <p class="mt"><a routerLink="/bookings">← Toutes mes réservations</a></p>
         }
       </article>
     } @empty {

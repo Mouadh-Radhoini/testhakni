@@ -8,11 +8,12 @@ import { errorMessage } from '../../core/api-error';
 import { ProviderPublic } from '../../core/models';
 import { CatalogService } from '../../core/services/catalog.service';
 import { ServiceCard } from '../../shared/service-card';
+import { Icon } from '../../shared/icon';
 
 /** Profil public d'un prestataire et ses services (PROV-03 / SEARCH-04). FE-06 */
 @Component({
   selector: 'app-provider-public',
-  imports: [ReviewsPanel, RouterLink, DatePipe, ServiceCard],
+  imports: [ReviewsPanel, RouterLink, DatePipe, ServiceCard, Icon],
   template: `
     <section class="container">
       @if (error()) {
@@ -21,13 +22,14 @@ import { ServiceCard } from '../../shared/service-card';
           <a class="btn" routerLink="/services">Voir les services</a>
         </div>
       } @else if (provider(); as p) {
-        <div class="card mb">
+        <div class="card mb profile">
           <div class="row">
+            <span class="avatar xl">{{ p.businessName.slice(0, 2).toUpperCase() }}</span>
             <h1>{{ p.businessName }}</h1>
             <span class="badge" [class.ACTIVE]="p.available">{{ p.available ? 'Disponible' : 'Indisponible' }}</span>
           </div>
           <p class="muted">
-            {{ p.displayName }} · 📍 {{ p.city }}
+            {{ p.displayName }} · <app-icon name="pin" [size]="15" class="inline" /> {{ p.city }}
             @if (p.serviceArea) { ({{ p.serviceArea }}) }
             @if (p.yearsOfExperience) { · {{ p.yearsOfExperience }} ans d'expérience }
             · membre depuis {{ p.memberSince | date: 'MMMM yyyy' }}
@@ -55,7 +57,13 @@ import { ServiceCard } from '../../shared/service-card';
       }
     </section>
   `,
-  styles: `.bio { white-space: pre-line; }`,
+  styles: `
+    .bio { white-space: pre-line; }
+    .profile h1 { margin: 0; flex: 1; }
+    .xl { width: 64px; height: 64px; font-size: 1.3rem; border-radius: 18px; background: linear-gradient(145deg, var(--c-primary), #1f9a80); }
+    .inline { vertical-align: -2px; display: inline-flex; }
+    h2 { margin-top: 2rem; }
+  `,
 })
 export class ProviderPublicPage implements OnInit {
   private readonly catalog = inject(CatalogService);

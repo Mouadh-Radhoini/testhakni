@@ -10,8 +10,8 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-login',
   imports: [ReactiveFormsModule, RouterLink],
   template: `
-    <section class="container narrow">
-      <div class="card">
+    <section class="auth-shell">
+      <div class="card auth-card">
         <h1>Connexion</h1>
         <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
           @if (error()) {
@@ -33,6 +33,11 @@ import { AuthService } from '../../core/services/auth.service';
           <p class="muted small">Pas encore de compte ? <a routerLink="/register">Inscrivez-vous</a></p>
         </form>
       </div>
+      <aside class="auth-aside" aria-hidden="true">
+        <h2>Bon retour parmi nous</h2>
+        <p>Retrouvez vos demandes, vos offres et vos réservations en un clin d’œil.</p>
+        <ul><li>Des prestataires de votre ville</li><li>Plusieurs offres à comparer</li><li>Des avis après chaque prestation</li></ul>
+      </aside>
     </section>
   `,
 })

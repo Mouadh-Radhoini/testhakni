@@ -8,14 +8,15 @@ import { PRICE_TYPE_LABELS, Service } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
 import { CatalogService } from '../../core/services/catalog.service';
 import { PricePipe } from '../../shared/price.pipe';
+import { CATEGORY_ICONS, Icon } from '../../shared/icon';
 
 /** Detail d'un service + bouton "Faire une demande" (SEARCH-03). FE-06 */
 @Component({
   selector: 'app-service-detail',
-  imports: [ReviewsPanel, RouterLink, PricePipe, DatePipe],
+  imports: [ReviewsPanel, RouterLink, PricePipe, DatePipe, Icon],
   template: `
     <section class="container">
-      <p><a routerLink="/services">← Retour aux résultats</a></p>
+      <p class="back"><a routerLink="/services">← Retour aux résultats</a></p>
 
       @if (error()) {
         <div class="card empty">
@@ -26,11 +27,12 @@ import { PricePipe } from '../../shared/price.pipe';
         <div class="layout">
           <article class="card">
             <div class="row">
+              <span class="icon-tile"><app-icon [name]="icons[s.category]" [size]="22" /></span>
               <span class="badge">{{ s.categoryLabel }}</span>
               @if (s.status !== 'ACTIVE') { <span class="badge" [class]="s.status">{{ s.status }}</span> }
             </div>
             <h1 class="mt">{{ s.title }}</h1>
-            <p class="muted">📍 {{ s.city }} · publié le {{ s.createdAt | date: 'dd/MM/yyyy' }}</p>
+            <p class="muted meta"><app-icon name="pin" [size]="16" /> {{ s.city }} · publié le {{ s.createdAt | date: 'dd/MM/yyyy' }}</p>
             <p class="description">{{ s.description }}</p>
           </article>
 
@@ -50,13 +52,13 @@ import { PricePipe } from '../../shared/price.pipe';
             }
 
             @if (s.provider; as p) {
-              <hr />
+              <hr class="divider" />
               <h2>{{ p.businessName }}</h2>
-              <p class="small muted">
-                📍 {{ p.city }}
+              <p class="small muted meta">
+                <app-icon name="pin" [size]="15" /> {{ p.city }}
                 @if (p.yearsOfExperience) { · {{ p.yearsOfExperience }} ans d'expérience }
               </p>
-              <p class="small">{{ p.available ? '🟢 Disponible' : '⚪ Indisponible pour le moment' }}</p>
+              <p><span class="badge" [class.ACTIVE]="p.available" [class.INACTIVE]="!p.available">{{ p.available ? 'Disponible' : 'Indisponible pour le moment' }}</span></p>
               <a class="btn secondary" [routerLink]="['/providers', p.providerId]">Voir le profil du prestataire</a>
             }
           </aside>
@@ -73,11 +75,16 @@ import { PricePipe } from '../../shared/price.pipe';
     .description { white-space: pre-line; }
     .side { display: flex; flex-direction: column; gap: 0.6rem; }
     .side p { margin: 0; }
-    .big { font-size: 1.6rem; }
-    hr { border: 0; border-top: 1px solid var(--c-border); width: 100%; }
+    .big { font-size: 2rem; }
+    .side { position: sticky; top: calc(var(--header-h) + 1rem); }
+    .meta { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+    .back { margin-bottom: 1rem; }
+    .layout .card:first-child { padding: 2rem; }
+    .description { font-size: 1.02rem; line-height: 1.7; }
   `,
 })
 export class ServiceDetail implements OnInit {
+  protected readonly icons = CATEGORY_ICONS;
   private readonly catalog = inject(CatalogService);
   protected readonly auth = inject(AuthService);
 

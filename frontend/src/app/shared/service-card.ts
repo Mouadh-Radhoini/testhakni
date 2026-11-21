@@ -1,36 +1,61 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { Service } from '../core/models';
+import { CATEGORY_ICONS, Icon } from './icon';
 import { PricePipe } from './price.pipe';
 
-/** Carte d'un service dans les listes (recherche, profil prestataire). */
+/** Carte d'un service dans les listes (accueil, recherche, profil prestataire). */
 @Component({
   selector: 'app-service-card',
-  imports: [RouterLink, PricePipe],
+  imports: [RouterLink, PricePipe, Icon],
   template: `
-    <a class="card service" [routerLink]="['/services', service().id]">
-      <div class="row">
+    <a class="service" [routerLink]="['/services', service().id]">
+      <div class="top">
+        <span class="icon-tile"><app-icon [name]="icon()" [size]="22" /></span>
         <span class="badge">{{ service().categoryLabel }}</span>
-        <span class="spacer"></span>
-        <span class="price">{{ service().price | price: service().priceType }}</span>
+        @if (service().status !== 'ACTIVE') {
+          <span class="badge" [class]="service().status">{{ service().status === 'INACTIVE' ? 'Masqué' : 'Suspendu' }}</span>
+        }
       </div>
       <h3>{{ service().title }}</h3>
-      <p class="muted small desc">{{ service().description }}</p>
-      <p class="small">
-        📍 {{ service().city }}
-        @if (service().provider; as p) { · {{ p.businessName }} }
-      </p>
+      <p class="desc">{{ service().description }}</p>
+      <div class="meta">
+        <span><app-icon name="pin" [size]="15" /> {{ service().city }}</span>
+        @if (service().provider; as p) {
+          <span class="pro"><app-icon name="user" [size]="15" /> {{ p.businessName }}</span>
+        }
+      </div>
+      <div class="foot">
+        <span class="price">{{ service().price | price: service().priceType }}</span>
+        <span class="go">Voir <app-icon name="arrow" [size]="16" /></span>
+      </div>
     </a>
   `,
   styles: `
-    .service { display: flex; flex-direction: column; gap: 0.4rem; color: inherit; height: 100%; }
-    .service:hover { border-color: var(--c-primary); text-decoration: none; }
-    h3 { margin: 0.2rem 0 0; font-size: 1.05rem; }
-    .desc { margin: 0; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    p { margin: 0; }
+    :host { display: block; height: 100%; }
+    .service {
+      display: flex; flex-direction: column; gap: 0.55rem; height: 100%;
+      padding: 1.2rem; background: var(--c-surface); border: 1px solid var(--c-border);
+      border-radius: var(--radius); color: inherit; font-weight: inherit;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+    .service:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: #bcd9d0; text-decoration: none; color: inherit; }
+    .top { display: flex; align-items: center; gap: 0.55rem; }
+    .top .icon-tile { width: 40px; height: 40px; margin-right: auto; }
+    h3 { margin: 0.35rem 0 0; font-size: 1.06rem; }
+    .desc { margin: 0; flex: 1; color: var(--c-muted); font-size: 0.9rem;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .meta { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; font-size: 0.84rem; color: var(--c-muted); font-weight: 600; }
+    .meta span { display: inline-flex; align-items: center; gap: 0.3rem; }
+    .pro { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .foot { display: flex; align-items: center; justify-content: space-between;
+      padding-top: 0.8rem; margin-top: 0.2rem; border-top: 1px solid var(--c-border); }
+    .price { font-size: 1.05rem; }
+    .go { display: inline-flex; align-items: center; gap: 0.25rem; color: var(--c-primary); font-weight: 700; font-size: 0.88rem; }
   `,
 })
 export class ServiceCard {
   readonly service = input.required<Service>();
+  protected readonly icon = computed(() => CATEGORY_ICONS[this.service().category] ?? 'grid');
 }

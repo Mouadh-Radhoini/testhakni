@@ -1,28 +1,120 @@
-<main class="home">
-  <h1>Local Services Marketplace</h1>
-  <p class="lead">Trouvez un prestataire près de chez vous : plombier, électricien, ménage, jardinage…</p>
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <span class="eyebrow"><app-icon name="pin" [size]="16" /> Services à domicile, près de chez vous</span>
+      <h1>Le bon professionnel, <span class="hl">au coin de la rue</span>.</h1>
+      <p class="lead">
+        Plomberie, électricité, ménage, jardinage, cours… Décrivez votre besoin, comparez les offres
+        des prestataires de votre ville et réservez en toute confiance.
+      </p>
 
-  <form class="search" (ngSubmit)="search()">
-    <input name="q" [(ngModel)]="query" placeholder="De quoi avez-vous besoin ?" aria-label="Rechercher un service" />
-    <button class="btn" type="submit">Rechercher</button>
-  </form>
+      <form class="search" (ngSubmit)="search()" role="search">
+        <label class="search-field">
+          <app-icon name="search" />
+          <span class="sr-only">Service recherché</span>
+          <input name="q" [(ngModel)]="query" placeholder="De quoi avez-vous besoin ?" aria-label="Rechercher un service" />
+        </label>
+        <label class="search-field city">
+          <app-icon name="pin" />
+          <span class="sr-only">Ville</span>
+          <input name="city" [(ngModel)]="city" placeholder="Ville" aria-label="Ville" />
+        </label>
+        <button class="btn big" type="submit">Rechercher</button>
+      </form>
 
-  <div class="row cta">
-    @if (!auth.isLoggedIn()) {
-      <a class="btn secondary" routerLink="/register/customer">Je cherche un service</a>
-      <a class="btn secondary" routerLink="/register/provider">Je propose mes services</a>
-    } @else if (auth.role() === 'PROVIDER') {
-      <a class="btn secondary" routerLink="/provider/services">Gérer mes services</a>
-    } @else if (auth.role() === 'CUSTOMER') {
-      <a class="btn secondary" routerLink="/requests/new">Publier une demande</a>
+      <div class="cta">
+        @if (!auth.isLoggedIn()) {
+          <a class="btn secondary" routerLink="/register/customer">Je cherche un service</a>
+          <a class="btn ghost" routerLink="/register/provider">Je propose mes services <app-icon name="arrow" [size]="16" /></a>
+        } @else if (auth.role() === 'PROVIDER') {
+          <a class="btn secondary" routerLink="/provider/requests">Voir les demandes ouvertes</a>
+          <a class="btn ghost" routerLink="/provider/services">Gérer mes services <app-icon name="arrow" [size]="16" /></a>
+        } @else if (auth.role() === 'CUSTOMER') {
+          <a class="btn accent" routerLink="/requests/new"><app-icon name="plus" [size]="18" /> Publier une demande</a>
+          <a class="btn ghost" routerLink="/requests">Mes demandes <app-icon name="arrow" [size]="16" /></a>
+        }
+      </div>
+
+      @if (apiState() === 'down') {
+        <p class="api down" role="status">Le service est momentanément indisponible. Réessayez dans un instant.</p>
+      }
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="blob"></div>
+      <div class="tile t1"><span class="icon-tile"><app-icon name="wrench" /></span><span>Plomberie</span></div>
+      <div class="tile t2"><span class="icon-tile accent"><app-icon name="bolt" /></span><span>Électricité</span></div>
+      <div class="tile t3"><span class="icon-tile"><app-icon name="leaf" /></span><span>Jardinage</span></div>
+      <div class="tile t4"><span class="icon-tile accent"><app-icon name="sparkles" /></span><span>Ménage</span></div>
+      <div class="offer">
+        <div class="offer-head"><span class="avatar">KP</span><div><strong>Nouvelle offre reçue</strong><small>Intervention demain, 9 h</small></div></div>
+        <div class="offer-row"><span>Réparation de fuite</span><strong>60 DT</strong></div>
+        <span class="btn small">Accepter l'offre</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Explorez par catégorie</h2>
+    <a routerLink="/services">Tous les services <app-icon name="arrow" [size]="16" /></a>
+  </div>
+  <div class="categories">
+    @for (c of categories(); track c.code) {
+      <a class="category" [routerLink]="['/services']" [queryParams]="{ category: c.code }">
+        <span class="icon-tile"><app-icon [name]="icons[c.code]" [size]="22" /></span>
+        <span>{{ c.label }}</span>
+      </a>
     }
   </div>
+</section>
 
-  <p class="api" [class]="apiState()">
-    @switch (apiState()) {
-      @case ('loading') { Connexion à l'API… }
-      @case ('up') { API connectée ✔ }
-      @case ('down') { API injoignable : lancez le backend (port 8080) }
+<section class="section how">
+  <h2>Comment ça marche</h2>
+  <ol class="steps">
+    @for (s of steps; track s.title; let i = $index) {
+      <li class="step">
+        <span class="num">{{ i + 1 }}</span>
+        <span class="icon-tile"><app-icon [name]="s.icon" /></span>
+        <h3>{{ s.title }}</h3>
+        <p class="muted">{{ s.text }}</p>
+      </li>
     }
-  </p>
-</main>
+  </ol>
+</section>
+
+@if (latest().length) {
+  <section class="section">
+    <div class="section-head">
+      <h2>Derniers services publiés</h2>
+      <a routerLink="/services">Voir plus <app-icon name="arrow" [size]="16" /></a>
+    </div>
+    <div class="grid">
+      @for (s of latest(); track s.id) {
+        <app-service-card [service]="s" />
+      }
+    </div>
+  </section>
+}
+
+<section class="section trust">
+  <div class="trust-item"><span class="icon-tile"><app-icon name="pin" /></span>
+    <div><h3>Des pros de votre ville</h3><p class="muted">Seuls les prestataires de votre zone et de la bonne catégorie voient votre demande.</p></div></div>
+  <div class="trust-item"><span class="icon-tile"><app-icon name="star" /></span>
+    <div><h3>Des avis authentiques</h3><p class="muted">Un avis n'est possible qu'après une prestation confirmée par le client.</p></div></div>
+  <div class="trust-item"><span class="icon-tile"><app-icon name="shield" /></span>
+    <div><h3>Une plateforme modérée</h3><p class="muted">Signalements traités par l'équipe, comptes abusifs suspendus.</p></div></div>
+</section>
+
+@if (auth.role() !== 'PROVIDER') {
+  <section class="band">
+    <div class="band-inner">
+      <div>
+        <h2>Vous êtes artisan ou indépendant ?</h2>
+        <p>Recevez des demandes près de chez vous, proposez votre prix et développez votre clientèle.</p>
+      </div>
+      <a class="btn accent big" routerLink="/register/provider">Devenir prestataire</a>
+    </div>
+  </section>
+}
