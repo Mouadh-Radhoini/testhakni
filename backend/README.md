@@ -20,8 +20,9 @@ cd backend
 ./mvnw test                   # Windows : .\mvnw.cmd test
 ```
 - Les tests utilisent le profil `test` et la base **`testhakni_test`**, vidée avant chaque test. Ta base de dev n'est jamais touchée.
-- Tests unitaires (Mockito, sans base) : `AuthServiceTest`, `JwtServiceTest`, `ServiceOfferingServiceTest`.
-- Tests API (MockMvc + MongoDB) : `AuthControllerTest`, `ServiceControllerTest`, `RequestControllerTest`, `HealthControllerTest`.
+- Tests unitaires (Mockito, sans base, ports mockés) : `AuthServiceTest`, `JwtServiceTest`, `ServiceOfferingServiceTest`, `MarketplaceServicesTest`.
+- Tests API (MockMvc + MongoDB) : `AuthControllerTest`, `ServiceControllerTest`, `RequestControllerTest`, `HealthControllerTest`, `MarketplaceWorkflowTest`.
+- Les tests sont rangés dans les mêmes paquets que le code qu'ils vérifient.
 
 ## Profils et variables d'environnement
 | Profil | Quand | Effet |
@@ -66,19 +67,37 @@ cd backend
 
 Codes d'erreur : `400` données invalides (détail dans `fieldErrors`), `401` non connecté ou token invalide, `403` mauvais rôle ou ressource d'un autre utilisateur, `404` introuvable, `409` conflit (email déjà pris, demande plus ouverte).
 
-## Organisation du code
+## Organisation du code : Clean Architecture par fonctionnalité
+
+Le code est découpé **par fonctionnalité métier**, et chaque fonctionnalité suit les mêmes **quatre couches** :
+
 ```
 com.testhakni.backend
-├── config/       sécurité (matrice des rôles), CORS, Swagger, MongoDB
-├── controller/   endpoints REST (/api/...)
-├── service/      logique métier (règles, vérification du propriétaire)
-├── repository/   accès MongoDB (Spring Data)
-├── model/        documents MongoDB + énumérations
-├── dto/          objets de requête / réponse + validation
-├── security/     JWT : génération, filtre, réponses 401/403
-├── exception/    format d'erreur unique (ApiError) + handler global
-└── seed/         données de démonstration (profil dev)
+├── identity/       comptes, inscription, connexion, JWT
+├── provider/       profil professionnel des prestataires
+├── catalog/        services publiés, catégories, recherche
+├── request/        demandes de service des clients
+├── offer/          offres des prestataires, acceptation
+├── booking/        réservations et suivi de la prestation
+├── review/         avis clients et notes
+├── notification/   notifications in-app
+├── moderation/     administration, modération, signalements
+└── shared/         noyau commun (erreurs, pagination, config Mongo/CORS/Swagger, seed)
+
+<fonctionnalité>/
+├── domain/           cœur métier, sans dépendance technique
+│   ├── model/        entités et énumérations (+ règles, ex. BookingStatus.expectedPrevious)
+│   └── repository/   ports : interfaces de dépôt dont le métier a besoin
+├── application/      cas d'usage (services), DTO d'entrée/sortie avec validation, ports de sortie
+├── infrastructure/   adaptateurs : MongoDB (Spring Data + MongoTemplate), sécurité JWT/BCrypt
+└── presentation/     contrôleurs REST
 ```
+
+Règle des dépendances : `presentation → application → domain ← infrastructure`.
+- Les cas d'usage ne voient jamais MongoDB : ils appellent des ports (`UserRepository`, `OfferRepository`…) implémentés par des adaptateurs `*RepositoryAdapter` dans `infrastructure/persistence`. Les interfaces Spring Data (`*MongoRepository`) sont privées au paquet.
+- Le domaine lève des `DomainException` portant un `ErrorType` (NOT_FOUND, CONFLICT…) ; seul `GlobalExceptionHandler` les traduit en codes HTTP.
+- La génération de tokens et le hachage des mots de passe passent par les ports `TokenProvider` et `PasswordHasher` (implémentés par `JwtService` et `BCryptPasswordHasher`).
+- Compromis assumé : les entités du domaine gardent les annotations de mapping MongoDB (`@Document`, `@Indexed`) plutôt que d'être dupliquées en classes de persistance avec des mappers.
 
 ## API du parcours de réservation
 

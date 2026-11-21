@@ -1,0 +1,18 @@
+package com.testhakni.backend.review.domain.model;
+
+import java.time.Instant;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document("reviews")
+public record Review(
+        @Id String id,
+        @Indexed(unique = true) String bookingId,
+        @Indexed String providerId,
+        @Indexed String serviceId,
+        int rating,
+        String comment,
+        boolean hidden,
+        Instant createdAt) {
+}
