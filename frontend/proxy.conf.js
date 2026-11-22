@@ -9,4 +9,10 @@ module.exports = {
     secure: false,
     changeOrigin: true,
   },
+  // Messagerie temps reel (STOMP sur WebSocket)
+  '/ws': {
+    target: `http://localhost:${port}`,
+    secure: false,
+    ws: true,
+  },
 };

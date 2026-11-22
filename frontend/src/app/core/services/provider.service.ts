@@ -21,6 +21,18 @@ export class ProviderService {
     return this.http.put<ProviderProfile>(`${this.api}/providers/me/profile`, body);
   }
 
+  /** Ajoute une photo de realisation (6 maximum). */
+  addPhoto(file: File): Observable<ProviderProfile> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<ProviderProfile>(`${this.api}/providers/me/photos`, form);
+  }
+
+  removePhoto(photoUrl: string): Observable<ProviderProfile> {
+    const id = photoUrl.split('/').pop();
+    return this.http.delete<ProviderProfile>(`${this.api}/providers/me/photos/${id}`);
+  }
+
   myServices(): Observable<Service[]> {
     return this.http.get<Service[]>(`${this.api}/services/mine`);
   }

@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
@@ -34,11 +34,11 @@ const metrics: Record<string, string> = {
 };
 
 @Component({
-  imports: [RouterLink, Feedback, ReactiveFormsModule],
+  imports: [RouterLink, RouterLinkActive, Feedback, ReactiveFormsModule],
   template: `<section class="container">
-    <nav class="row mb" aria-label="Administration">
+    <nav class="tabs" aria-label="Administration">
       @for (key of sections; track key) {
-        <a [routerLink]="['/admin', key]">{{ titles[key] }}</a>
+        <a [routerLink]="['/admin', key]" routerLinkActive="active">{{ titles[key] }}</a>
       }
     </nav>
     <h1>{{ titles[section] }}</h1>

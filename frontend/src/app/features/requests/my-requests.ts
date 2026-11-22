@@ -21,7 +21,7 @@ import { RequestService } from '../../core/services/request.service';
       @if (created()) { <div class="alert success mb">Votre demande a bien été envoyée.</div> }
       @if (error()) { <div class="alert error mb">{{ error() }}</div> }
 
-      <div class="row mb tabs" role="tablist">
+      <div class="row mb" role="group">
         @for (f of filters; track f.value) {
           <button type="button" class="btn small" [class.secondary]="status() !== f.value" (click)="load(f.value)">
             {{ f.label }}
@@ -49,7 +49,7 @@ import { RequestService } from '../../core/services/request.service';
                 }
               </div>
               <p class="muted small">
-                {{ r.categoryLabel }} · 📍 {{ r.city }}
+                {{ r.categoryLabel }} · {{ r.city }}
                 @if (r.preferredDate) { · souhaitée le {{ r.preferredDate | date: 'dd/MM/yyyy' }} }
                 @if (r.budget !== null) { · budget {{ r.budget | number: '1.0-2' }} DT }
                 · créée le {{ r.createdAt | date: 'dd/MM/yyyy' }}
