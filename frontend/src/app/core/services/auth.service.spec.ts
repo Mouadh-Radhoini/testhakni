@@ -77,8 +77,31 @@ describe('AuthService', () => {
     http.expectOne(`${environment.apiUrl}/auth/login`).flush(RESPONSE);
 
     service.logout();
+    const revoke = http.expectOne(`${environment.apiUrl}/auth/logout`);
+    expect(revoke.request.body).toEqual({ refreshToken: 'refresh-1' });
+    revoke.flush(null, { status: 204, statusText: 'No Content' });
     expect(service.isLoggedIn()).toBeFalse();
     expect(localStorage.getItem('lsm.auth')).toBeNull();
     expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
+  });
+
+  it('shares one refresh request between simultaneous callers', () => {
+    service.login('a@mail.com', 'x').subscribe();
+    http.expectOne(`${environment.apiUrl}/auth/login`).flush(RESPONSE);
+
+    const seen: string[] = [];
+    service.refresh().subscribe((r) => seen.push(r.accessToken));
+    service.refresh().subscribe((r) => seen.push(r.accessToken));
+    http.expectOne(`${environment.apiUrl}/auth/refresh`).flush({ ...RESPONSE, accessToken: 'access-2' });
+    expect(seen).toEqual(['access-2', 'access-2']);
+
+    // Une fois termine, un nouveau refresh repart bien vers le serveur
+    service.refresh().subscribe();
+    http.expectOne(`${environment.apiUrl}/auth/refresh`).flush(RESPONSE);
+  });
+
+  it('logs out without calling the server when there is no session', () => {
+    service.logout(false);
+    http.expectNone(`${environment.apiUrl}/auth/logout`);
   });
 });

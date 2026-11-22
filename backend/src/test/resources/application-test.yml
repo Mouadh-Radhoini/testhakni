@@ -11,6 +11,14 @@ app:
     secret: dGVzdC1vbmx5LXNlY3JldC1mb3ItdW5pdC1hbmQtaW50ZWdyYXRpb24tdGVzdHMtMTIzNDU2Nzg5MA==
     access-token-ttl: 5m
     refresh-token-ttl: 1h
+  security:
+    # Les tests d'integration creent beaucoup de comptes depuis la meme IP :
+    # limites larges ici, le comportement 429 est verifie par des tests dedies.
+    rate-limit:
+      login: { capacity: 10000, period: 1m }
+      register: { capacity: 10000, period: 1m }
+      refresh: { capacity: 10000, period: 1m }
+      failed-logins: { capacity: 10000, period: 1m }
 
 logging:
   level:

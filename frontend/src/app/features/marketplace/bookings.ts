@@ -5,22 +5,28 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Booking, bookingLabels } from '../../core/marketplace.models';
 import { AuthService } from '../../core/services/auth.service';
 import { MarketplaceService } from '../../core/services/marketplace.service';
+import { MessagingService } from '../../core/services/messaging.service';
+import { Router } from '@angular/router';
 import { Feedback, PageState } from './page-state';
 
 @Component({
   imports: [Feedback, RouterLink, DatePipe, ReactiveFormsModule],
+  styles: `.grow-title { flex: 1; margin: 0; } .badge { margin-inline-start: auto; }`,
   template: `<section class="container">
     <h1>{{ id() ? 'Détail de la réservation' : 'Mes réservations' }}</h1>
     <app-feedback [state]="state" />
     @for (b of bookings(); track b.id) {
       <article class="card mb">
-        <h2>{{ b.title }}</h2>
-        <p>{{ b.price }} DT · {{ b.proposedDate }} · {{ labels[b.status] }}</p>
+        <div class="row">
+          <h2 class="grow-title">{{ b.title }}</h2>
+          <span class="badge" [class]="b.status">{{ labels[b.status] }}</span>
+        </div>
+        <p class="muted"><strong class="price">{{ b.price }} DT</strong> · Intervention le {{ b.proposedDate | date: 'dd/MM/yyyy' }}</p>
         @if (!id()) {
           <a [routerLink]="['/bookings', b.id]">Voir la réservation</a>
         } @else {
           <p>{{ b.address }}</p>
-          <ol>
+          <ol class="timeline">
             @for (h of b.history; track h.status) {
               <li>{{ labels[h.status] }} · {{ h.at | date: 'dd/MM/yyyy HH:mm' }}</li>
             }
@@ -55,7 +61,12 @@ import { Feedback, PageState } from './page-state';
               </button>
             </form>
           }
-          <a routerLink="/bookings">Toutes mes réservations</a>
+          <div class="row mt">
+            <button class="btn secondary" type="button" (click)="chat(b)">
+              {{ auth.role() === 'PROVIDER' ? 'Écrire au client' : 'Écrire au prestataire' }}
+            </button>
+            <a routerLink="/bookings">← Toutes mes réservations</a>
+          </div>
         }
       </article>
     } @empty {
@@ -71,6 +82,11 @@ export class BookingsPage implements OnInit {
   readonly auth = inject(AuthService);
   private readonly api = inject(MarketplaceService);
   readonly labels = bookingLabels;
+  private readonly messaging = inject(MessagingService);
+  private readonly router = inject(Router);
+  chat(b: Booking) {
+    this.state.run(this.messaging.openForBooking(b.id), (c) => this.router.navigate(['/messages', c.id]));
+  }
   readonly bookings = signal<Booking[]>([]);
   readonly form = inject(FormBuilder).nonNullable.group({
     rating: [5, Validators.required],

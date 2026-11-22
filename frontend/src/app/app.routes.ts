@@ -2,7 +2,8 @@ import { Routes } from '@angular/router';
 
 import { authGuard, guestGuard, roleGuard } from './core/guards/auth.guards';
 
-const T = ' - Local Services Marketplace';
+// Le suffixe de marque et la traduction sont ajoutes par TranslatedTitleStrategy
+const T = '';
 
 /** Toutes les pages sont chargees a la demande (lazy loading). FE-01 */
 export const routes: Routes = [
@@ -59,17 +60,20 @@ export const routes: Routes = [
     title: 'Prestataire' + T,
   },
 
-  { path: 'provider/requests', canActivate: [roleGuard('PROVIDER')], loadComponent: () => import('./features/marketplace/requests').then(m => m.OpenRequests) },
-  { path: 'provider/offers', canActivate: [roleGuard('PROVIDER')], loadComponent: () => import('./features/marketplace/offers').then(m => m.OffersPage) },
-  { path: 'requests/:id/offers', canActivate: [roleGuard('CUSTOMER')], loadComponent: () => import('./features/marketplace/offers').then(m => m.OffersPage) },
-  { path: 'bookings', canActivate: [roleGuard('CUSTOMER','PROVIDER')], loadComponent: () => import('./features/marketplace/bookings').then(m => m.BookingsPage) },
-  { path: 'bookings/:id', canActivate: [roleGuard('CUSTOMER','PROVIDER')], loadComponent: () => import('./features/marketplace/bookings').then(m => m.BookingsPage) },
-  { path: 'notifications', canActivate: [authGuard], loadComponent: () => import('./features/marketplace/notifications').then(m => m.NotificationsPage) },
-  { path: 'admin/dashboard', canActivate: [roleGuard('ADMIN')], data: {section:'dashboard'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
-  { path: 'admin/users', canActivate: [roleGuard('ADMIN')], data: {section:'users'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
-  { path: 'admin/services', canActivate: [roleGuard('ADMIN')], data: {section:'services'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
-  { path: 'admin/reviews', canActivate: [roleGuard('ADMIN')], data: {section:'reviews'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
-  { path: 'admin/reports', canActivate: [roleGuard('ADMIN')], data: {section:'reports'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
+  { path: 'provider/requests', title: 'Demandes ouvertes' + T, canActivate: [roleGuard('PROVIDER')], loadComponent: () => import('./features/marketplace/requests').then(m => m.OpenRequests) },
+  { path: 'provider/offers', title: 'Mes offres' + T, canActivate: [roleGuard('PROVIDER')], loadComponent: () => import('./features/marketplace/offers').then(m => m.OffersPage) },
+  { path: 'requests/:id/offers', title: 'Comparer les offres' + T, canActivate: [roleGuard('CUSTOMER')], loadComponent: () => import('./features/marketplace/offers').then(m => m.OffersPage) },
+  { path: 'bookings', title: 'Réservations' + T, canActivate: [roleGuard('CUSTOMER','PROVIDER')], loadComponent: () => import('./features/marketplace/bookings').then(m => m.BookingsPage) },
+  { path: 'bookings/:id', title: 'Réservations' + T, canActivate: [roleGuard('CUSTOMER','PROVIDER')], loadComponent: () => import('./features/marketplace/bookings').then(m => m.BookingsPage) },
+  { path: 'contacts', canActivate: [roleGuard('CUSTOMER','PROVIDER')], title: 'Contacts' + T, loadComponent: () => import('./features/contacts/contacts').then(m => m.ContactsPage) },
+  { path: 'messages', canActivate: [roleGuard('CUSTOMER','PROVIDER')], title: 'Messages' + T, loadComponent: () => import('./features/messaging/messages').then(m => m.MessagesPage) },
+  { path: 'messages/:id', canActivate: [roleGuard('CUSTOMER','PROVIDER')], title: 'Messages' + T, loadComponent: () => import('./features/messaging/messages').then(m => m.MessagesPage) },
+  { path: 'notifications', title: 'Notifications' + T, canActivate: [authGuard], loadComponent: () => import('./features/marketplace/notifications').then(m => m.NotificationsPage) },
+  { path: 'admin/dashboard', canActivate: [roleGuard('ADMIN')], data: {section:'dashboard'}, title: 'Administration' + T, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
+  { path: 'admin/users', canActivate: [roleGuard('ADMIN')], data: {section:'users'}, title: 'Administration' + T, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
+  { path: 'admin/services', canActivate: [roleGuard('ADMIN')], data: {section:'services'}, title: 'Administration' + T, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
+  { path: 'admin/reviews', canActivate: [roleGuard('ADMIN')], data: {section:'reviews'}, title: 'Administration' + T, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
+  { path: 'admin/reports', canActivate: [roleGuard('ADMIN')], data: {section:'reports'}, title: 'Administration' + T, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
 
   // Espace prestataire (FE-04 / FE-05)
   {

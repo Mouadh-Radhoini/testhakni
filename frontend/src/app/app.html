@@ -1,37 +1,168 @@
+<a class="skip" href="#contenu">{{ 'nav.skip' | t }}</a>
+
 <header class="topbar">
-  <nav class="nav">
-    <a routerLink="/" class="brand">🛠️ LocalServices</a>
-    <a routerLink="/services" routerLinkActive="active">Trouver un service</a>
+  <nav class="nav" [attr.aria-label]="'nav.main' | t">
+    <a routerLink="/" class="brand" [attr.aria-label]="'nav.home' | t">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="34" height="34"><rect width="32" height="32" rx="9" fill="currentColor"/>
+          <path d="M9 17.5 16 11l7 6.5V24h-4.5v-4h-5v4H9z" fill="#fff"/><circle cx="23" cy="9" r="3" fill="#f2a33a"/></svg>
+      </span>
+      <span class="wordmark">teste<strong>hkni</strong></span>
+    </a>
 
-    @if (auth.role() === 'CUSTOMER') {
-      <a routerLink="/requests" routerLinkActive="active">Mes demandes</a>
-    }
-    @if (auth.role() === 'PROVIDER') {
-      <a routerLink="/provider/services" routerLinkActive="active">Mes services</a>
-      <a routerLink="/provider/requests">Demandes ouvertes</a>
-      <a routerLink="/provider/offers">Mes offres</a>
-      <a routerLink="/provider/profile" routerLinkActive="active">Profil pro</a>
-    }
+    <div id="menu" class="menu" [class.open]="menuOpen()">
+      <div class="links">
+        <a routerLink="/services" routerLinkActive="active">{{ 'nav.find' | t }}</a>
+        @if (auth.role() === 'CUSTOMER') {
+          <a routerLink="/requests" routerLinkActive="active">{{ 'nav.myRequests' | t }}</a>
+        }
+        @if (auth.role() === 'PROVIDER') {
+          <a routerLink="/provider/services" routerLinkActive="active">{{ 'nav.myServices' | t }}</a>
+          <a routerLink="/provider/requests" routerLinkActive="active">{{ 'nav.openRequests' | t }}</a>
+          <a routerLink="/provider/offers" routerLinkActive="active">{{ 'nav.myOffers' | t }}</a>
+        }
+        @if (auth.hasRole('CUSTOMER', 'PROVIDER')) {
+          <a routerLink="/bookings" routerLinkActive="active">{{ 'nav.bookings' | t }}</a>
+          <a routerLink="/messages" routerLinkActive="active" class="with-count">
+            {{ 'nav.messages' | t }}
+            @if (messaging.unread()) { <span class="count">{{ messaging.unread() > 9 ? '9+' : messaging.unread() }}</span> }
+          </a>
+        }
+        @if (auth.role() === 'ADMIN') {
+          <a routerLink="/admin/dashboard" routerLinkActive="active">{{ 'nav.admin' | t }}</a>
+        }
+      </div>
 
-    @if (auth.hasRole('CUSTOMER','PROVIDER')) { <a routerLink="/bookings">Réservations</a> }
-    @if (auth.role() === 'ADMIN') { <a routerLink="/admin/dashboard">Administration</a> }
-    @if (auth.user()) { <app-notification-bell/> }
-    <span class="spacer"></span>
+      <!-- Reglages visibles dans le menu mobile -->
+      <div class="prefs mobile-only">
+        <ng-container *ngTemplateOutlet="prefs" />
+      </div>
 
-    @if (auth.user(); as user) {
-      <a routerLink="/account" routerLinkActive="active" class="who">
-        {{ user.firstName }} <span class="badge">{{ user.role }}</span>
-      </a>
-      <button type="button" class="btn secondary small" (click)="auth.logout()">Déconnexion</button>
-    } @else {
-      <a routerLink="/login" routerLinkActive="active">Connexion</a>
-      <a routerLink="/register" class="btn small">Inscription</a>
-    }
+      @if (auth.user(); as user) {
+        <div class="account-mobile mobile-only">
+          <a routerLink="/account" class="btn secondary small">{{ 'nav.account' | t }}</a>
+          @if (auth.hasRole('CUSTOMER', 'PROVIDER')) {
+            <a routerLink="/contacts" class="btn secondary small">
+              {{ 'nav.contacts' | t }}
+              @if (contacts.pending()) { <span class="count">{{ contacts.pending() }}</span> }
+            </a>
+          }
+          @if (auth.role() === 'PROVIDER') {
+            <a routerLink="/provider/profile" class="btn secondary small">{{ 'nav.proProfile' | t }}</a>
+          }
+          <button type="button" class="btn ghost small" (click)="auth.logout()">
+            <app-icon name="logout" [size]="16" /> {{ 'nav.logout' | t }}
+          </button>
+        </div>
+      } @else {
+        <div class="account-mobile mobile-only">
+          <a routerLink="/login" class="btn secondary small">{{ 'nav.login' | t }}</a>
+          <a routerLink="/register" class="btn small">{{ 'nav.register' | t }}</a>
+        </div>
+      }
+    </div>
+
+    <div class="actions">
+      <div class="prefs desktop-only">
+        <ng-container *ngTemplateOutlet="prefs" />
+      </div>
+
+      @if (auth.user(); as user) {
+        <app-notification-bell />
+        <div class="user" (focusout)="onUserBlur($event)">
+          <button type="button" class="user-btn" (click)="toggleUserMenu()" [attr.aria-expanded]="userMenu()"
+                  aria-haspopup="menu" [attr.aria-label]="'nav.account' | t">
+            @if (user.avatarUrl) {
+              <img class="avatar photo" [src]="user.avatarUrl" alt="" />
+            } @else {
+              <span class="avatar">{{ initials() }}</span>
+            }
+            <span class="who-text desktop-only">
+              <span class="who-name">{{ user.firstName }}</span>
+              <span class="who-role">{{ ('role.' + user.role) | t }}</span>
+            </span>
+            <app-icon name="chevron" [size]="16" class="desktop-only" />
+            @if (contacts.pending()) { <span class="dot-badge" aria-hidden="true"></span> }
+          </button>
+          <div class="dropdown" role="menu" [class.open]="userMenu()">
+            <div class="dropdown-head">
+              <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+              <small>{{ user.email }}</small>
+            </div>
+            <a routerLink="/account" role="menuitem"><app-icon name="user" [size]="16" /> {{ 'nav.account' | t }}</a>
+            @if (auth.hasRole('CUSTOMER', 'PROVIDER')) {
+              <a routerLink="/contacts" role="menuitem">
+                <app-icon name="users" [size]="16" /> {{ 'nav.contacts' | t }}
+                @if (contacts.pending()) { <span class="count push">{{ contacts.pending() }}</span> }
+              </a>
+            }
+            @if (auth.role() === 'PROVIDER') {
+              <a routerLink="/provider/profile" role="menuitem"><app-icon name="briefcase" [size]="16" /> {{ 'nav.proProfile' | t }}</a>
+            }
+            <button type="button" role="menuitem" (click)="auth.logout()"><app-icon name="logout" [size]="16" /> {{ 'nav.logout' | t }}</button>
+          </div>
+        </div>
+      } @else {
+        <a routerLink="/login" routerLinkActive="active" class="btn ghost small desktop-only">{{ 'nav.login' | t }}</a>
+        <a routerLink="/register" class="btn small desktop-only">{{ 'nav.register' | t }}</a>
+      }
+
+      <button type="button" class="burger btn ghost" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()"
+              aria-controls="menu" [attr.aria-label]="(menuOpen() ? 'nav.closeMenu' : 'nav.openMenu') | t">
+        <app-icon [name]="menuOpen() ? 'close' : 'menu'" />
+      </button>
+    </div>
   </nav>
 </header>
 
-<main>
+<ng-template #prefs>
+  <div class="lang" role="group" [attr.aria-label]="'lang.label' | t">
+    @for (l of i18n.langs; track l.code) {
+      <button type="button" [class.on]="i18n.lang() === l.code" (click)="i18n.use(l.code)"
+              [attr.aria-pressed]="i18n.lang() === l.code" [attr.title]="l.label" [attr.lang]="l.code">{{ l.short }}</button>
+    }
+  </div>
+  <button type="button" class="icon-btn" (click)="theme.toggle()"
+          [attr.aria-label]="(theme.theme() === 'dark' ? 'theme.toLight' : 'theme.toDark') | t"
+          [attr.title]="(theme.theme() === 'dark' ? 'theme.toLight' : 'theme.toDark') | t">
+    <app-icon [name]="theme.theme() === 'dark' ? 'sun' : 'moon'" [size]="18" />
+  </button>
+</ng-template>
+
+<main id="contenu" tabindex="-1">
   <router-outlet />
 </main>
 
-<footer class="footer muted small">Local Services Marketplace — projet de fin d'études</footer>
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a routerLink="/" class="brand">
+        <span class="logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="30" height="30"><rect width="32" height="32" rx="9" fill="currentColor"/>
+            <path d="M9 17.5 16 11l7 6.5V24h-4.5v-4h-5v4H9z" fill="#fff"/><circle cx="23" cy="9" r="3" fill="#f2a33a"/></svg>
+        </span>
+        <span class="wordmark">teste<strong>hkni</strong></span>
+      </a>
+      <p>{{ 'brand.tagline' | t }}</p>
+    </div>
+    <div>
+      <h4>{{ 'footer.clients' | t }}</h4>
+      <a routerLink="/services">{{ 'nav.find' | t }}</a>
+      <a routerLink="/register/customer">{{ 'footer.createCustomer' | t }}</a>
+      <a routerLink="/requests/new">{{ 'footer.postRequest' | t }}</a>
+    </div>
+    <div>
+      <h4>{{ 'footer.providers' | t }}</h4>
+      <a routerLink="/register/provider">{{ 'footer.becomeProvider' | t }}</a>
+      <a routerLink="/provider/requests">{{ 'nav.openRequests' | t }}</a>
+      <a routerLink="/provider/services">{{ 'footer.manageServices' | t }}</a>
+    </div>
+    <div>
+      <h4>{{ 'footer.platform' | t }}</h4>
+      <span>{{ 'footer.jwt' | t }}</span>
+      <span>{{ 'footer.reviews' | t }}</span>
+      <span>{{ 'footer.moderation' | t }}</span>
+    </div>
+  </div>
+  <div class="footer-bottom">© {{ year }} testehkni — {{ 'footer.project' | t }}</div>
+</footer>

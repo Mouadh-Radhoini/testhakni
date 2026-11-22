@@ -1,20 +1,21 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl, FormGroup } from '@angular/forms';
 
+import { tr } from './i18n/i18n';
 import { ApiError } from './models';
 
 /** Message lisible a partir d'une erreur HTTP (format ApiError du backend). */
 export function errorMessage(err: unknown): string {
   if (err instanceof HttpErrorResponse) {
     if (err.status === 0) {
-      return "Impossible de joindre l'API. Le backend est-il lancé ?";
+      return tr('err.network');
     }
     const body = err.error as Partial<ApiError> | null;
     if (body?.message) {
       return body.message;
     }
   }
-  return 'Une erreur inattendue est survenue.';
+  return tr('err.unexpected');
 }
 
 /**
@@ -33,20 +34,20 @@ export function applyServerErrors(form: FormGroup, err: unknown): void {
   }
 }
 
-/** Premier message d'erreur d'un controle, en francais. */
+/** Premier message d'erreur d'un controle, dans la langue de l'interface. */
 export function controlError(control: AbstractControl | null): string | null {
   if (!control || !control.errors || !(control.touched || control.dirty)) return null;
   const e = control.errors;
   if (e['server']) return e['server'];
-  if (e['required']) return 'Champ obligatoire';
-  if (e['email']) return 'Email invalide';
-  if (e['minlength']) return `${e['minlength'].requiredLength} caractères minimum`;
-  if (e['maxlength']) return `${e['maxlength'].requiredLength} caractères maximum`;
-  if (e['min']) return `Valeur minimale : ${e['min'].min}`;
-  if (e['max']) return `Valeur maximale : ${e['max'].max}`;
-  if (e['pattern']) return 'Format invalide';
+  if (e['required']) return tr('val.required');
+  if (e['email']) return tr('val.email');
+  if (e['minlength']) return tr('val.minlength', { n: e['minlength'].requiredLength });
+  if (e['maxlength']) return tr('val.maxlength', { n: e['maxlength'].requiredLength });
+  if (e['min']) return tr('val.min', { n: e['min'].min });
+  if (e['max']) return tr('val.max', { n: e['max'].max });
+  if (e['pattern']) return tr('val.pattern');
   if (e['password']) return e['password'];
-  return 'Valeur invalide';
+  return tr('val.invalid');
 }
 
 /** Meme politique que le backend (AUTH-07). */

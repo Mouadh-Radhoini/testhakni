@@ -21,6 +21,17 @@ export class AccountService {
     return this.http.put<User>(this.api, body).pipe(tap((u) => this.auth.updateUser(u)));
   }
 
+  /** Envoie une nouvelle photo de profil (JPEG, PNG ou WebP, 2 Mo max). */
+  uploadAvatar(file: File): Observable<User> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.put<User>(`${this.api}/avatar`, form).pipe(tap((u) => this.auth.updateUser(u)));
+  }
+
+  removeAvatar(): Observable<User> {
+    return this.http.delete<User>(`${this.api}/avatar`).pipe(tap((u) => this.auth.updateUser(u)));
+  }
+
   changePassword(currentPassword: string, newPassword: string): Observable<void> {
     return this.http.put<void>(`${this.api}/password`, { currentPassword, newPassword });
   }

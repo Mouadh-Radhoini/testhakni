@@ -23,19 +23,20 @@ describe('Home', () => {
     return fixture;
   }
 
-  it('shows the title', () => {
+  it('shows the headline and the search form', () => {
     const el = render(() => of({ status: 'UP' })).nativeElement as HTMLElement;
-    expect(el.querySelector('h1')?.textContent).toContain('Local Services Marketplace');
+    expect(el.querySelector('h1')?.textContent).toContain('Le bon professionnel');
+    expect(el.querySelector('form[role="search"]')).not.toBeNull();
   });
 
-  it('shows API connected when backend is up', () => {
+  it('shows no availability warning when backend is up', () => {
     const el = render(() => of({ status: 'UP' })).nativeElement as HTMLElement;
-    expect(el.querySelector('.api')?.textContent).toContain('API connectée');
+    expect(el.querySelector('.api')).toBeNull();
   });
 
-  it('shows API unreachable on error', () => {
+  it('warns the visitor when the backend is unreachable', () => {
     const el = render(() => throwError(() => new Error('down'))).nativeElement as HTMLElement;
-    expect(el.querySelector('.api')?.textContent).toContain('injoignable');
+    expect(el.querySelector('.api')?.textContent).toContain('indisponible');
   });
 
   it('navigates to the search page with the keyword', () => {
@@ -46,5 +47,16 @@ describe('Home', () => {
     home.query = '  fuite ';
     home.search();
     expect(router.navigate).toHaveBeenCalledWith(['/services'], { queryParams: { q: 'fuite' } });
+  });
+
+  it('adds the city to the search when given', () => {
+    const fixture = render(() => of({ status: 'UP' }));
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
+    const home = fixture.componentInstance as unknown as { query: string; city: string; search: () => void };
+    home.query = 'ménage';
+    home.city = ' Sousse ';
+    home.search();
+    expect(router.navigate).toHaveBeenCalledWith(['/services'], { queryParams: { q: 'ménage', city: 'Sousse' } });
   });
 });

@@ -8,11 +8,13 @@ import { ServiceCategory } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
 import { CatalogService } from '../../core/services/catalog.service';
 import { ProviderService } from '../../core/services/provider.service';
+import { PortfolioManager } from '../../shared/portfolio-manager';
+import { TranslatePipe } from '../../core/i18n/i18n';
 
 /** Creation / modification du profil professionnel (PROV-01 / PROV-02). FE-04 */
 @Component({
   selector: 'app-provider-profile-edit',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, PortfolioManager, TranslatePipe],
   template: `
     <section class="container narrow">
       <div class="row mb">
@@ -75,6 +77,16 @@ import { ProviderService } from '../../core/services/provider.service';
           <div><button class="btn" type="submit" [disabled]="saving()">Enregistrer le profil</button></div>
         </form>
       </div>
+
+      <div class="card mt">
+        <h2>{{ 'portfolio.title' | t }}</h2>
+        @if (hasProfile()) {
+          <p class="muted small">{{ 'portfolio.hint' | t }}</p>
+          <app-portfolio-manager [(photos)]="photos" />
+        } @else {
+          <p class="muted small">{{ 'portfolio.needProfile' | t }}</p>
+        }
+      </div>
     </section>
   `,
   styles: `fieldset { border: 0; padding: 0; margin: 0; } .checks { align-self: end; }`,
@@ -86,6 +98,8 @@ export class ProviderProfileEdit implements OnInit {
   protected readonly categories = toSignal(inject(CatalogService).categories(), { initialValue: [] });
 
   protected readonly saving = signal(false);
+  protected readonly photos = signal<string[]>([]);
+  protected readonly hasProfile = signal(false);
   protected readonly msg = signal<{ type: string; text: string } | null>(null);
 
   protected readonly form = this.fb.group({
@@ -101,7 +115,9 @@ export class ProviderProfileEdit implements OnInit {
 
   ngOnInit(): void {
     this.providers.myProfile().subscribe({
-      next: (p) =>
+      next: (p) => {
+        this.hasProfile.set(true);
+        this.photos.set(p.photoUrls ?? []);
         this.form.setValue({
           businessName: p.businessName,
           bio: p.bio ?? '',
@@ -111,7 +127,8 @@ export class ProviderProfileEdit implements OnInit {
           serviceArea: p.serviceArea ?? '',
           yearsOfExperience: p.yearsOfExperience,
           available: p.available,
-        }),
+        });
+      },
       // 404 = profil pas encore cree : formulaire vide
       error: () => this.msg.set({ type: 'info', text: 'Complétez votre profil pour être visible des clients.' }),
     });
@@ -145,8 +162,10 @@ export class ProviderProfileEdit implements OnInit {
     this.providers
       .saveProfile({ ...v, skills, bio: v.bio || null, serviceArea: v.serviceArea || null })
       .subscribe({
-        next: () => {
+        next: (p) => {
           this.saving.set(false);
+          this.hasProfile.set(true);
+          this.photos.set(p.photoUrls ?? []);
           this.msg.set({ type: 'success', text: 'Profil enregistré.' });
         },
         error: (e) => {
