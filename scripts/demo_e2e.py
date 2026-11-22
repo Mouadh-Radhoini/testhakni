@@ -11,7 +11,7 @@ from playwright.sync_api import expect, sync_playwright
 def main():
     if os.environ.get("APP_DATABASE") != "testhakni_test":
         raise SystemExit("Set APP_DATABASE=testhakni_test and use the isolated test stack.")
-    origin = "http://127.0.0.1:" + str(int(os.environ.get("WEB_PORT", "8088")))
+    origin = os.environ.get("WEB_ORIGIN") or "http://127.0.0.1:" + str(int(os.environ.get("WEB_PORT", "8088")))
     suffix = uuid4().hex[:10]
     password = "Qa!" + secrets.token_hex(16) + "7"
     title = "Plomberie " + suffix
@@ -21,14 +21,19 @@ def main():
         browser = playwright.chromium.launch(executable_path=shutil.which("chromium") or shutil.which("google-chrome"))
 
         def page():
-            return browser.new_context(base_url=origin, viewport={"width": 1050, "height": 800}).new_page()
+            return browser.new_context(base_url=origin, viewport={"width": 1280, "height": 800}).new_page()
+
+        def logout(tab):
+            # Le bouton de deconnexion se trouve dans le menu deroulant du compte
+            tab.locator(".user-btn").click()
+            tab.get_by_role("menuitem", name="Déconnexion").click()
 
         def login(tab, email, secret):
             tab.goto("/login")
             tab.locator("#email").fill(email)
             tab.locator("#password").fill(secret)
             tab.locator("form button[type=submit]").click()
-            expect(tab.get_by_role("button", name="Déconnexion")).to_be_visible()
+            expect(tab.locator(".user-btn")).to_be_visible()
 
         def register(role, name):
             tab = page()
@@ -41,7 +46,7 @@ def main():
                 tab.locator("#businessName").fill(name + " " + suffix)
                 tab.get_by_label("Plomberie", exact=True).check()
             tab.locator("form button[type=submit]").click()
-            tab.get_by_role("button", name="Déconnexion").click()
+            logout(tab)
             login(tab, email, password)
             return tab
 
@@ -156,7 +161,7 @@ def main():
         account.get_by_role("button", name="Suspendre").click()
         expect(account.get_by_role("button", name="Activer")).to_be_visible()
         competitor.goto("/provider/offers")
-        expect(competitor.get_by_role("button", name="Déconnexion")).to_have_count(0)
+        expect(competitor.locator(".user-btn")).to_have_count(0)
         account.get_by_role("button", name="Activer").click()
         account.get_by_label("Motif de la décision").fill("Compte vérifié")
         account.get_by_role("button", name="Activer").click()
