@@ -7,6 +7,7 @@ import { applyServerErrors, controlError, errorMessage } from '../../core/api-er
 import { ServiceCategory } from '../../core/models';
 import { CatalogService } from '../../core/services/catalog.service';
 import { RequestService } from '../../core/services/request.service';
+import { TranslatePipe } from '../../core/i18n/i18n';
 
 /**
  * Creation d'une demande (REQ-02 cote UI). FE-06
@@ -14,63 +15,63 @@ import { RequestService } from '../../core/services/request.service';
  */
 @Component({
   selector: 'app-request-form',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <section class="container narrow">
-      <p><a routerLink="/requests">← Mes demandes</a></p>
+      <p><a routerLink="/requests"><span class="flip">←</span> {{ 'nav.myRequests' | t }}</a></p>
       <div class="card">
-        <h1>Nouvelle demande</h1>
+        <h1>{{ 'rf.title' | t }}</h1>
         @if (title()) {
-          <p class="alert info">Demande liée au service « {{ title() }} »</p>
+          <p class="alert info">{{ 'rf.linked' | t: { title: title() } }}</p>
         }
         <form class="form" [formGroup]="form" (ngSubmit)="save()" novalidate>
           @if (error()) { <div class="alert error">{{ error() }}</div> }
           <div class="field">
-            <label for="title">Titre de la demande</label>
-            <input id="title" formControlName="title" placeholder="Ex. Fuite sous l'évier" />
+            <label for="title">{{ 'rf.name' | t }}</label>
+            <input id="title" formControlName="title" [placeholder]="'rf.namePh' | t" />
             @if (err('title'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="field">
-            <label for="description">Décrivez votre besoin</label>
+            <label for="description">{{ 'rf.describe' | t }}</label>
             <textarea id="description" formControlName="description"></textarea>
             @if (err('description'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="form-row">
             <div class="field">
-              <label for="category">Catégorie</label>
+              <label for="category">{{ 'search.category' | t }}</label>
               <select id="category" formControlName="category">
-                <option value="" disabled>Choisir…</option>
+                <option value="" disabled>{{ 'sf.choose' | t }}</option>
                 @for (c of categories(); track c.code) {
-                  <option [value]="c.code">{{ c.label }}</option>
+                  <option [value]="c.code">{{ ('cat.' + c.code) | t }}</option>
                 }
               </select>
               @if (err('category'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field">
-              <label for="city">Ville</label>
+              <label for="city">{{ 'search.city' | t }}</label>
               <input id="city" formControlName="city" />
               @if (err('city'); as e) { <span class="error">{{ e }}</span> }
             </div>
           </div>
           <div class="field">
-            <label for="address">Adresse <span class="muted">(optionnel)</span></label>
+            <label for="address">{{ 'rf.address' | t }} <span class="muted">{{ 'auth.optional' | t }}</span></label>
             <input id="address" formControlName="address" />
           </div>
           <div class="form-row">
             <div class="field">
-              <label for="preferredDate">Date souhaitée <span class="muted">(optionnel)</span></label>
+              <label for="preferredDate">{{ 'rf.date' | t }} <span class="muted">{{ 'auth.optional' | t }}</span></label>
               <input id="preferredDate" type="date" [min]="today" formControlName="preferredDate" />
               @if (err('preferredDate'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field">
-              <label for="budget">Budget en DT <span class="muted">(optionnel)</span></label>
+              <label for="budget">{{ 'rf.budget' | t }} <span class="muted">{{ 'auth.optional' | t }}</span></label>
               <input id="budget" type="number" min="0" formControlName="budget" />
               @if (err('budget'); as e) { <span class="error">{{ e }}</span> }
             </div>
           </div>
           <div class="row">
-            <button class="btn" type="submit" [disabled]="saving()">Envoyer la demande</button>
-            <a class="btn secondary" routerLink="/requests">Annuler</a>
+            <button class="btn" type="submit" [disabled]="saving()">{{ 'rf.send' | t }}</button>
+            <a class="btn secondary" routerLink="/requests">{{ 'common.cancel' | t }}</a>
           </div>
         </form>
       </div>

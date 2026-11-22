@@ -25,5 +25,6 @@ public record ProviderPublicResponse(
         Instant memberSince,
         List<ServiceResponse> services, Double averageRating, long reviewCount,
         String avatarUrl,
-        List<String> photoUrls) {
+        List<String> photoUrls,
+        long completedJobs) {
 }

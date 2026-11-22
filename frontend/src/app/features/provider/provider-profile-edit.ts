@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { CatalogService } from '../../core/services/catalog.service';
 import { ProviderService } from '../../core/services/provider.service';
 import { PortfolioManager } from '../../shared/portfolio-manager';
-import { TranslatePipe } from '../../core/i18n/i18n';
+import { TranslatePipe, tr } from '../../core/i18n/i18n';
 
 /** Creation / modification du profil professionnel (PROV-01 / PROV-02). FE-04 */
 @Component({
@@ -18,63 +18,63 @@ import { TranslatePipe } from '../../core/i18n/i18n';
   template: `
     <section class="container narrow">
       <div class="row mb">
-        <h1>Mon profil professionnel</h1>
+        <h1>{{ 'pp.title' | t }}</h1>
         <span class="spacer"></span>
-        <a class="btn secondary small" [routerLink]="['/providers', auth.user()?.id]">Voir mon profil public</a>
+        <a class="btn secondary small" [routerLink]="['/providers', auth.user()?.id]">{{ 'pp.viewPublic' | t }}</a>
       </div>
       <div class="card">
         <form class="form" [formGroup]="form" (ngSubmit)="save()" novalidate>
           @if (msg(); as m) { <div class="alert" [class]="m.type">{{ m.text }}</div> }
           <div class="field">
-            <label for="businessName">Nom commercial</label>
+            <label for="businessName">{{ 'auth.businessName' | t }}</label>
             <input id="businessName" formControlName="businessName" />
             @if (err('businessName'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="field">
-            <label for="bio">Présentation</label>
-            <textarea id="bio" formControlName="bio" placeholder="Votre expérience, vos points forts…"></textarea>
+            <label for="bio">{{ 'pp.bio' | t }}</label>
+            <textarea id="bio" formControlName="bio" [placeholder]="'pp.bioPh' | t"></textarea>
             @if (err('bio'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <fieldset class="field">
-            <label>Catégories</label>
+            <label>{{ 'pp.categories' | t }}</label>
             <div class="checks">
               @for (c of categories(); track c.code) {
                 <label>
                   <input type="checkbox" [checked]="isSelected(c.code)" (change)="toggle(c.code)" />
-                  {{ c.label }}
+                  {{ ('cat.' + c.code) | t }}
                 </label>
               }
             </div>
             @if (err('categories'); as e) { <span class="error">{{ e }}</span> }
           </fieldset>
           <div class="field">
-            <label for="skills">Compétences</label>
-            <input id="skills" formControlName="skills" placeholder="Fuites, Chauffe-eau, Tableau électrique" />
-            <span class="hint">Séparées par des virgules (20 maximum).</span>
+            <label for="skills">{{ 'pp.skills' | t }}</label>
+            <input id="skills" formControlName="skills" [placeholder]="'pp.skillsPh' | t" />
+            <span class="hint">{{ 'pp.skillsHint' | t }}</span>
             @if (err('skills'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="form-row">
             <div class="field">
-              <label for="city">Ville</label>
+              <label for="city">{{ 'search.city' | t }}</label>
               <input id="city" formControlName="city" />
               @if (err('city'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field">
-              <label for="serviceArea">Zone d'intervention</label>
-              <input id="serviceArea" formControlName="serviceArea" placeholder="Grand Tunis, 20 km…" />
+              <label for="serviceArea">{{ 'pp.area' | t }}</label>
+              <input id="serviceArea" formControlName="serviceArea" [placeholder]="'pp.areaPh' | t" />
             </div>
           </div>
           <div class="form-row">
             <div class="field">
-              <label for="years">Années d'expérience</label>
+              <label for="years">{{ 'pp.years' | t }}</label>
               <input id="years" type="number" min="0" max="60" formControlName="yearsOfExperience" />
               @if (err('yearsOfExperience'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field checks">
-              <label><input type="checkbox" formControlName="available" /> Disponible pour de nouvelles demandes</label>
+              <label><input type="checkbox" formControlName="available" /> {{ 'pp.available' | t }}</label>
             </div>
           </div>
-          <div><button class="btn" type="submit" [disabled]="saving()">Enregistrer le profil</button></div>
+          <div><button class="btn" type="submit" [disabled]="saving()">{{ 'pp.save' | t }}</button></div>
         </form>
       </div>
 
@@ -130,7 +130,7 @@ export class ProviderProfileEdit implements OnInit {
         });
       },
       // 404 = profil pas encore cree : formulaire vide
-      error: () => this.msg.set({ type: 'info', text: 'Complétez votre profil pour être visible des clients.' }),
+      error: () => this.msg.set({ type: 'info', text: tr('pp.msgIncomplete') }),
     });
   }
 
@@ -166,7 +166,7 @@ export class ProviderProfileEdit implements OnInit {
           this.saving.set(false);
           this.hasProfile.set(true);
           this.photos.set(p.photoUrls ?? []);
-          this.msg.set({ type: 'success', text: 'Profil enregistré.' });
+          this.msg.set({ type: 'success', text: tr('pp.msgSaved') });
         },
         error: (e) => {
           this.saving.set(false);

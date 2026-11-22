@@ -16,7 +16,7 @@
 
 /* Trois zones alignees sur une meme ligne : marque | liens | actions */
 .nav {
-  max-width: var(--container); margin: 0 auto; padding: 0 1.25rem;
+  max-width: 1480px; margin: 0 auto; padding: 0 1.25rem;
   height: var(--header-h);
   display: flex; align-items: center; gap: 1.25rem;
 }
@@ -52,6 +52,7 @@
 
 /* Langue et theme */
 .prefs { display: flex; align-items: center; gap: 0.4rem; }
+@media (max-width: 1180px) { .prefs .lang button { height: 36px; min-width: 40px; } .prefs .icon-btn { width: 44px; height: 44px; } }
 .lang {
   display: inline-flex; padding: 3px; border-radius: 999px; background: var(--c-hover);
   button {
@@ -105,7 +106,8 @@
 .burger { display: none; padding: 0.5rem; }
 .mobile-only { display: none !important; }
 
-@media (max-width: 1180px) {
+/* Menu replie (burger) : meme rendu a deux largeurs, selon le nombre de liens du role */
+@mixin collapsed-nav {
   .burger { display: inline-flex; }
   .desktop-only { display: none !important; }
   .mobile-only { display: flex !important; }
@@ -122,6 +124,17 @@
   .prefs { justify-content: space-between; padding-top: 0.9rem; border-top: 1px solid var(--c-border); }
   .account-mobile { flex-wrap: wrap; gap: 0.5rem; }
   .user-btn { padding: 3px; }
+}
+
+/* Client et administrateur : peu de liens, le menu complet tient des 1180 px.
+   Prestataire : six liens, on replie plus tot pour que rien ne se chevauche. */
+@media (max-width: 1180px) { @include collapsed-nav; }
+@media (max-width: 1340px) { .nav.many { @include collapsed-nav; } }
+
+/* Ecran moyen : le menu compte n'affiche que l'avatar, ce qui libere de la place pour les liens */
+@media (max-width: 1520px) {
+  .nav .who-text, .nav .user-btn .desktop-only { display: none !important; }
+  .nav .user-btn { padding: 3px; }
 }
 
 @media (max-width: 420px) {

@@ -1,6 +1,6 @@
 import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { Icon } from '../../shared/icon';
-import { tr } from '../../core/i18n/i18n';
+import { tr, TranslatePipe } from '../../core/i18n/i18n';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { EMPTY, catchError, switchMap, timer } from 'rxjs';
@@ -8,6 +8,7 @@ import { Notice } from '../../core/marketplace.models';
 import { Page } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
 import { MarketplaceService } from '../../core/services/marketplace.service';
+import { ServerTextPipe } from '../../core/i18n/server-messages';
 import { Feedback, PageState } from './page-state';
 
 @Component({
@@ -49,31 +50,31 @@ export class NotificationBell {
 }
 
 @Component({
-  imports: [Feedback, DatePipe],
+  imports: [Feedback, DatePipe, TranslatePipe, ServerTextPipe],
   template: `<section class="container">
-    <h1>Notifications</h1>
+    <h1>{{ 'nav.notifications' | t }}</h1>
     <app-feedback [state]="state" />
     @if (list(); as p) {
       @for (n of p.content; track n.id) {
         <article class="card mb">
-          <p>{{ n.message }}</p>
+          <p>{{ n.message | serverText }}</p>
           <p class="muted">{{ n.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
           @if (!n.readAt) {
             <button class="btn secondary" [disabled]="state.loading()" (click)="read(n)">
-              Marquer comme lue
+              {{ 'nt.markRead' | t }}
             </button>
           } @else {
-            <span>Lue</span>
+            <span>{{ 'nt.read' | t }}</span>
           }
         </article>
       } @empty {
-        <p>Aucune notification.</p>
+        <p>{{ 'nt.none' | t }}</p>
       }
       @if (!p.first) {
-        <button (click)="load(p.page - 1)">Précédent</button>
+        <button (click)="load(p.page - 1)">{{ 'search.prev' | t }}</button>
       }
       @if (!p.last) {
-        <button (click)="load(p.page + 1)">Suivant</button>
+        <button (click)="load(p.page + 1)">{{ 'search.next' | t }}</button>
       }
     }
   </section>`,
@@ -95,7 +96,7 @@ export class NotificationsPage implements OnInit {
         this.api.noticeRevision.update((i) => i + 1);
         this.load(this.list()?.page ?? 0);
       },
-      'Notification lue.',
+      tr('nt.msgRead'),
     );
   }
 }

@@ -103,9 +103,10 @@ import { LocalDatePipe } from '../../shared/local-date.pipe';
     .layout .card:first-child { padding: 2rem; }
     .description { font-size: 1.02rem; line-height: 1.7; }
     .blurred { filter: blur(7px); user-select: none; }
-    .locked { display: flex; gap: 1rem; align-items: flex-start; margin-top: 1rem; padding: 1.2rem;
+    .locked { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; margin-top: 1rem; padding: 1.2rem;
       border-radius: var(--radius); background: var(--c-accent-soft); }
     .locked h2 { margin: 0 0 0.3rem; font-size: 1.1rem; }
+    .locked > div { flex: 1 1 220px; min-width: 0; }
   `,
 })
 export class ServiceDetail implements OnInit {

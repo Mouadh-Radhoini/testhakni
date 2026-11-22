@@ -30,15 +30,20 @@ function initialLang(): Lang {
 /** Langue courante, partagee par le service, le pipe et les fonctions utilitaires. */
 const current = signal<Lang>(initialLang());
 
+/** Langue courante (lecture reactive : a utiliser dans un computed / effect / template). */
+export function currentLanguage(): Lang {
+  return current();
+}
+
 /**
  * Traduit une cle ; {nom} est remplace par params.nom.
  * Repli : francais, puis la cle elle-meme (visible en developpement si une traduction manque).
  */
-export function tr(key: string, params?: Record<string, string | number>): string {
+export function tr(key: string, params?: Record<string, string | number | null | undefined>): string {
   const dict = DICTIONARIES[current()] as Record<string, string>;
   let text = dict[key] ?? (FR as Record<string, string>)[key] ?? key;
   if (params) {
-    for (const [name, value] of Object.entries(params)) text = text.replaceAll(`{${name}}`, String(value));
+    for (const [name, value] of Object.entries(params)) text = text.replaceAll(`{${name}}`, String(value ?? ''));
   }
   return text;
 }
@@ -82,7 +87,7 @@ export class I18n {
 /** {{ 'nav.find' | t }} ou {{ 'search.count' | t: { n: total } }} ; se met a jour au changement de langue. */
 @Pipe({ name: 't', pure: false })
 export class TranslatePipe implements PipeTransform {
-  transform(key: string, params?: Record<string, string | number>): string {
+  transform(key: string, params?: Record<string, string | number | null | undefined>): string {
     return tr(key, params);
   }
 }

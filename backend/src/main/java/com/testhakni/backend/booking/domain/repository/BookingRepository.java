@@ -2,6 +2,7 @@ package com.testhakni.backend.booking.domain.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.testhakni.backend.booking.domain.model.Booking;
 import com.testhakni.backend.booking.domain.model.BookingStatus;
@@ -24,6 +25,12 @@ public interface BookingRepository {
      * dans le statut {@code expected}. Renvoie la reservation mise a jour, ou vide sinon.
      */
     Optional<Booking> transition(String id, BookingStatus expected, Booking.Transition transition);
+
+    /** Comme {@link #transition} mais accepte plusieurs statuts de depart. */
+    Optional<Booking> transitionFrom(String id, Set<BookingStatus> allowed, Booking.Transition transition);
+
+    /** Nombre de prestations terminees d'un prestataire (son experience sur la plateforme). */
+    long countCompleted(String providerId);
 
     void markReviewed(String id);
 

@@ -7,65 +7,66 @@ import { applyServerErrors, controlError, errorMessage } from '../../core/api-er
 import { PRICE_TYPE_LABELS, PriceType, ServiceCategory } from '../../core/models';
 import { CatalogService } from '../../core/services/catalog.service';
 import { ProviderService } from '../../core/services/provider.service';
+import { TranslatePipe } from '../../core/i18n/i18n';
 
 /** Formulaire de creation / modification d'un service (SERV-02 / SERV-03). FE-05 */
 @Component({
   selector: 'app-service-form',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <section class="container narrow">
-      <p><a routerLink="/provider/services">← Mes services</a></p>
+      <p><a routerLink="/provider/services"><span class="flip">←</span> {{ 'nav.myServices' | t }}</a></p>
       <div class="card">
-        <h1>{{ id() ? 'Modifier le service' : 'Nouveau service' }}</h1>
+        <h1>{{ (id() ? 'sf.edit' : 'sf.new') | t }}</h1>
         <form class="form" [formGroup]="form" (ngSubmit)="save()" novalidate>
           @if (error()) { <div class="alert error">{{ error() }}</div> }
           <div class="field">
-            <label for="title">Titre</label>
-            <input id="title" formControlName="title" placeholder="Ex. Réparation de fuite d'eau" />
+            <label for="title">{{ 'sf.title' | t }}</label>
+            <input id="title" formControlName="title" [placeholder]="'sf.titlePh' | t" />
             @if (err('title'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="field">
-            <label for="description">Description</label>
+            <label for="description">{{ 'sf.description' | t }}</label>
             <textarea id="description" formControlName="description"></textarea>
             @if (err('description'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="form-row">
             <div class="field">
-              <label for="category">Catégorie</label>
+              <label for="category">{{ 'search.category' | t }}</label>
               <select id="category" formControlName="category">
-                <option value="" disabled>Choisir…</option>
+                <option value="" disabled>{{ 'sf.choose' | t }}</option>
                 @for (c of categories(); track c.code) {
-                  <option [value]="c.code">{{ c.label }}</option>
+                  <option [value]="c.code">{{ ('cat.' + c.code) | t }}</option>
                 }
               </select>
               @if (err('category'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field">
-              <label for="city">Ville</label>
+              <label for="city">{{ 'search.city' | t }}</label>
               <input id="city" formControlName="city" />
               @if (err('city'); as e) { <span class="error">{{ e }}</span> }
             </div>
           </div>
           <div class="form-row">
             <div class="field">
-              <label for="priceType">Type de prix</label>
+              <label for="priceType">{{ 'sf.priceType' | t }}</label>
               <select id="priceType" formControlName="priceType" (change)="onPriceTypeChange()">
                 @for (t of priceTypes; track t) {
-                  <option [value]="t">{{ priceTypeLabel[t] }}</option>
+                  <option [value]="t">{{ ('priceType.' + t) | t }}</option>
                 }
               </select>
             </div>
             <div class="field">
-              <label for="price">Prix (DT)</label>
+              <label for="price">{{ 'sf.price' | t }}</label>
               <input id="price" type="number" min="0" step="0.5" formControlName="price" />
               @if (err('price'); as e) { <span class="error">{{ e }}</span> }
             </div>
           </div>
           <div class="row">
             <button class="btn" type="submit" [disabled]="saving()">
-              {{ id() ? 'Enregistrer' : 'Publier le service' }}
+              {{ (id() ? 'common.save' : 'sf.publish') | t }}
             </button>
-            <a class="btn secondary" routerLink="/provider/services">Annuler</a>
+            <a class="btn secondary" routerLink="/provider/services">{{ 'common.cancel' | t }}</a>
           </div>
         </form>
       </div>

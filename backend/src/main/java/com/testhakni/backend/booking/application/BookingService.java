@@ -40,6 +40,43 @@ public class BookingService {
         return booking;
     }
 
+    /**
+     * Le client fait avancer sa reservation : la declarer en cours (le prestataire est au travail),
+     * terminee, ou l'annuler. Reserve au client de la reservation ; la demande liee suit le meme sort.
+     */
+    @Transactional
+    public Booking customerSet(AuthenticatedUser user, String id, BookingStatus target) {
+        var booking = detail(user, id);
+        if (!user.id().equals(booking.customerId())) {
+            throw DomainException.forbidden("Action réservée au client");
+        }
+        var sources = BookingStatus.customerSourcesFor(target);
+        if (sources.isEmpty()) throw DomainException.badRequest("Statut autorisé : IN_PROGRESS, COMPLETED ou CANCELLED");
+        var updated = bookings.transitionFrom(id, sources, new Booking.Transition(target, user.id(), Instant.now()))
+                .orElseThrow(() -> DomainException.conflict("Action impossible depuis le statut actuel"));
+        // La demande liee : terminee ou annulee avec la reservation (reste "en cours" pour IN_PROGRESS)
+        if (target == BookingStatus.COMPLETED
+                && !requests.changeStatus(booking.requestId(), RequestStatus.IN_PROGRESS, RequestStatus.COMPLETED)) {
+            throw DomainException.conflict("État de la demande incompatible");
+        }
+        if (target == BookingStatus.CANCELLED
+                && !requests.changeStatus(booking.requestId(), RequestStatus.IN_PROGRESS, RequestStatus.CANCELLED)) {
+            throw DomainException.conflict("État de la demande incompatible");
+        }
+        String type = switch (target) {
+            case COMPLETED -> "BOOKING_COMPLETED";
+            case CANCELLED -> "BOOKING_CANCELLED";
+            default -> "BOOKING_UPDATED";
+        };
+        String text = switch (target) {
+            case COMPLETED -> "Le client a confirmé la fin de la prestation : ";
+            case CANCELLED -> "Le client a annulé la réservation : ";
+            default -> "Le client indique que le travail a commencé : ";
+        };
+        notifications.send(booking.providerId(), type, id, text + booking.title());
+        return updated;
+    }
+
     @Transactional
     public Booking transition(AuthenticatedUser user, String id, BookingStatus target) {
         var booking = detail(user, id);

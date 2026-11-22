@@ -75,7 +75,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/requests/*/offers").hasRole("PROVIDER")
                 .requestMatchers("/api/bookings/*/status").hasRole("PROVIDER")
-                .requestMatchers("/api/bookings/*/confirm", "/api/bookings/*/review").hasRole("CUSTOMER")
+                .requestMatchers("/api/bookings/*/confirm", "/api/bookings/*/review", "/api/bookings/*/customer-status")
+                        .hasRole("CUSTOMER")
                 .requestMatchers("/api/bookings/**").hasAnyRole("CUSTOMER", "PROVIDER")
                 .requestMatchers(HttpMethod.GET, "/api/providers/*/reviews").permitAll()
                 // Catalogue public

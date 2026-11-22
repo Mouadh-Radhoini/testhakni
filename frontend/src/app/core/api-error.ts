@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl, FormGroup } from '@angular/forms';
 
 import { tr } from './i18n/i18n';
+import { serverMessage } from './i18n/server-messages';
 import { ApiError } from './models';
 
 /** Message lisible a partir d'une erreur HTTP (format ApiError du backend). */
@@ -12,7 +13,7 @@ export function errorMessage(err: unknown): string {
     }
     const body = err.error as Partial<ApiError> | null;
     if (body?.message) {
-      return body.message;
+      return serverMessage(body.message);
     }
   }
   return tr('err.unexpected');
@@ -38,7 +39,7 @@ export function applyServerErrors(form: FormGroup, err: unknown): void {
 export function controlError(control: AbstractControl | null): string | null {
   if (!control || !control.errors || !(control.touched || control.dirty)) return null;
   const e = control.errors;
-  if (e['server']) return e['server'];
+  if (e['server']) return serverMessage(e['server']);
   if (e['required']) return tr('val.required');
   if (e['email']) return tr('val.email');
   if (e['minlength']) return tr('val.minlength', { n: e['minlength'].requiredLength });

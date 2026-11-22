@@ -5,36 +5,37 @@ import { RouterLink } from '@angular/router';
 import { errorMessage } from '../../core/api-error';
 import { REQUEST_STATUS_LABELS, RequestStatus, ServiceRequest } from '../../core/models';
 import { RequestService } from '../../core/services/request.service';
+import { TranslatePipe, tr } from '../../core/i18n/i18n';
 
 /** Liste des demandes du client, filtrable par statut, avec annulation (REQ-02). FE-06 */
 @Component({
   selector: 'app-my-requests',
-  imports: [RouterLink, DatePipe, DecimalPipe],
+  imports: [RouterLink, DatePipe, DecimalPipe, TranslatePipe],
   template: `
     <section class="container">
       <div class="row mb">
-        <h1>Mes demandes</h1>
+        <h1>{{ 'nav.myRequests' | t }}</h1>
         <span class="spacer"></span>
-        <a class="btn" routerLink="/requests/new">+ Nouvelle demande</a>
+        <a class="btn" routerLink="/requests/new">{{ 'rq.new' | t }}</a>
       </div>
 
-      @if (created()) { <div class="alert success mb">Votre demande a bien été envoyée.</div> }
+      @if (created()) { <div class="alert success mb">{{ 'rq.sent' | t }}</div> }
       @if (error()) { <div class="alert error mb">{{ error() }}</div> }
 
       <div class="row mb" role="group">
         @for (f of filters; track f.value) {
           <button type="button" class="btn small" [class.secondary]="status() !== f.value" (click)="load(f.value)">
-            {{ f.label }}
+            {{ f.label | t }}
           </button>
         }
       </div>
 
       @if (loading()) {
-        <p class="muted">Chargement…</p>
+        <p class="muted">{{ 'common.loading' | t }}</p>
       } @else if (requests().length === 0) {
         <div class="card empty">
-          <p>Aucune demande pour le moment.</p>
-          <a class="btn" routerLink="/services">Parcourir les services</a>
+          <p>{{ 'rq.empty' | t }}</p>
+          <a class="btn" routerLink="/services">{{ 'rq.browse' | t }}</a>
         </div>
       } @else {
         <div class="list">
@@ -45,19 +46,19 @@ import { RequestService } from '../../core/services/request.service';
                 <span class="badge" [class]="r.status">{{ statusLabel[r.status] }}</span>
                 <span class="spacer"></span>
                 @if (r.status === 'OPEN') {
-                  <button class="btn danger small" (click)="cancel(r)">Annuler</button>
+                  <button class="btn danger small" (click)="cancel(r)">{{ 'common.cancel' | t }}</button>
                 }
               </div>
               <p class="muted small">
-                {{ r.categoryLabel }} · {{ r.city }}
-                @if (r.preferredDate) { · souhaitée le {{ r.preferredDate | date: 'dd/MM/yyyy' }} }
-                @if (r.budget !== null) { · budget {{ r.budget | number: '1.0-2' }} DT }
-                · créée le {{ r.createdAt | date: 'dd/MM/yyyy' }}
+                {{ ('cat.' + r.category) | t }} · {{ r.city }}
+                @if (r.preferredDate) { · {{ 'rq.wished' | t: { date: (r.preferredDate | date: 'dd/MM/yyyy') } }} }
+                @if (r.budget !== null) { · {{ 'rq.budget' | t: { n: (r.budget | number: '1.0-2') } }} }
+                · {{ 'rq.created' | t: { date: (r.createdAt | date: 'dd/MM/yyyy') } }}
               </p>
               <p class="desc">{{ r.description }}</p>
-              <a [routerLink]="['/requests', r.id, 'offers']">Comparer les offres</a>
+              <a [routerLink]="['/requests', r.id, 'offers']">{{ 'rq.compare' | t }}</a>
               @if (r.serviceId) {
-                <a class="small" [routerLink]="['/services', r.serviceId]">Voir le service concerné</a>
+                <a class="small" [routerLink]="['/services', r.serviceId]">{{ 'rq.seeService' | t }}</a>
               }
             </article>
           }
@@ -79,11 +80,11 @@ export class MyRequests implements OnInit {
 
   protected readonly statusLabel = REQUEST_STATUS_LABELS;
   protected readonly filters: { value: RequestStatus | ''; label: string }[] = [
-    { value: '', label: 'Toutes' },
-    { value: 'OPEN', label: 'Ouvertes' },
-    { value: 'IN_PROGRESS', label: 'En cours' },
-    { value: 'COMPLETED', label: 'Terminées' },
-    { value: 'CANCELLED', label: 'Annulées' },
+    { value: '', label: 'search.all' },
+    { value: 'OPEN', label: 'rq.f.OPEN' },
+    { value: 'IN_PROGRESS', label: 'rq.f.IN_PROGRESS' },
+    { value: 'COMPLETED', label: 'rq.f.COMPLETED' },
+    { value: 'CANCELLED', label: 'rq.f.CANCELLED' },
   ];
   protected readonly status = signal<RequestStatus | ''>('');
   protected readonly requests = signal<ServiceRequest[]>([]);
@@ -110,7 +111,7 @@ export class MyRequests implements OnInit {
   }
 
   cancel(r: ServiceRequest): void {
-    if (!confirm(`Annuler la demande « ${r.title} » ?`)) return;
+    if (!confirm(tr('rq.confirmCancel', { title: r.title }))) return;
     this.requestService.cancel(r.id).subscribe({
       next: () => this.load(this.status()),
       error: (e) => this.error.set(errorMessage(e)),
