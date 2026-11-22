@@ -52,6 +52,7 @@
 
 /* Langue et theme */
 .prefs { display: flex; align-items: center; gap: 0.4rem; }
+@media (max-width: 1180px) { .prefs .lang button { height: 36px; min-width: 40px; } .prefs .icon-btn { width: 44px; height: 44px; } }
 .lang {
   display: inline-flex; padding: 3px; border-radius: 999px; background: var(--c-hover);
   button {

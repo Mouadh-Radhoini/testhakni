@@ -186,7 +186,7 @@ p { margin: 0 0 0.75rem; }
 
 input, select, textarea {
   font: inherit;
-  font-size: 0.96rem;
+  font-size: 1rem; /* 16 px : en dessous, iOS zoome la page au focus */
   padding: 0.68rem 0.85rem;
   border: 1px solid var(--c-border-strong);
   border-radius: var(--radius-sm);
@@ -338,6 +338,8 @@ label:not(.search-field):has(> select, > textarea, > input:not([type='checkbox']
   border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow);
   border: 1px solid var(--c-border); background: var(--c-surface);
 }
+/* Un enfant de grille ne doit pas imposer sa largeur minimale (sinon debordement a 320 px) */
+.auth-shell > * { min-width: 0; }
 .auth-shell .auth-card { border: 0; border-radius: 0; box-shadow: none; padding: 2.4rem 2.4rem 2rem; }
 .auth-aside {
   padding: 2.6rem 2.2rem; color: #d6e9e2;
@@ -359,6 +361,24 @@ label:not(.search-field):has(> select, > textarea, > input:not([type='checkbox']
   .auth-shell { grid-template-columns: 1fr; margin-top: 1.25rem; }
   .auth-aside { display: none; }
   .auth-shell .auth-card { padding: 1.6rem 1.25rem; }
+}
+
+/* ------------------------------------------------------------- tactile et petits ecrans */
+.btn.small { min-height: 36px; }
+@media (max-width: 768px), (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .btn.small { min-height: 40px; }
+  .btn.ghost.small, .btn.secondary.small { min-height: 40px; }
+  input:not([type='checkbox']):not([type='radio']):not([type='file']), select { min-height: 44px; }
+  .tabs a, .tabs button { min-height: 44px; }
+  .checks label { min-height: 40px; }
+}
+@media (max-width: 480px) {
+  /* Les libelles longs passent a la ligne au lieu de depasser de l'ecran */
+  .btn { white-space: normal; text-align: center; }
+  .container { padding-inline: 1rem; }
+  .card { padding: 1.1rem; }
+  h1 { overflow-wrap: anywhere; }
 }
 
 @media (prefers-reduced-motion: reduce) {
