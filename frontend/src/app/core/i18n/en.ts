@@ -294,4 +294,6 @@ export const EN: Dictionary = {
   'title.Réservations': 'Bookings',
   'title.Notifications': 'Notifications',
   'title.Administration': 'Admin',
+  'provider.jobs': '{n} job(s) completed',
+  'provider.reviewsCount': '{n} review(s)',
 };

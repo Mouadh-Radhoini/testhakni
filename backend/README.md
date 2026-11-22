@@ -78,6 +78,7 @@ Codes d'erreur : `400` données invalides (détail dans `fieldErrors`), `401` no
 | PUT / DELETE | `/api/users/me/avatar` | connecté | Changer / supprimer sa photo de profil (`multipart/form-data`, champ `file`) |
 | POST | `/api/providers/me/photos` | PROVIDER | Ajouter une photo de réalisation (6 max) |
 | DELETE | `/api/providers/me/photos/{id}` | PROVIDER | Supprimer une de ses photos |
+| PATCH | `/api/bookings/{id}/customer-status` | CUSTOMER (propriétaire) | Le client déclare la prestation `IN_PROGRESS`, `COMPLETED` ou l'annule (`CANCELLED`, impossible une fois terminée). La demande liée suit, le prestataire est notifié |
 | GET | `/api/conversations` | CUSTOMER, PROVIDER | Mes conversations (avec nombre de non-lus) |
 | GET | `/api/conversations/unread` | CUSTOMER, PROVIDER | Total des messages non lus |
 | POST | `/api/conversations/by-offer/{offerId}` | client de la demande ou prestataire de l'offre | Ouvrir / retrouver le fil |

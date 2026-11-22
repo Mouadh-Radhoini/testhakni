@@ -3,6 +3,7 @@ package com.testhakni.backend.provider.application;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.testhakni.backend.booking.domain.repository.BookingRepository;
 import com.testhakni.backend.catalog.application.dto.ServiceResponse;
 import com.testhakni.backend.catalog.domain.model.ServiceStatus;
 import com.testhakni.backend.catalog.domain.repository.ServiceOfferingRepository;
@@ -31,9 +32,12 @@ public class ProviderProfileService {
     private final UserRepository userRepository;
     private final ServiceOfferingRepository serviceRepository;
     private final ReviewRepository reviews;
+    private final BookingRepository bookings;
 
     public ProviderProfileService(ProviderProfileRepository profileRepository, UserRepository userRepository,
-                                  ServiceOfferingRepository serviceRepository, ReviewRepository reviews) {
+                                  ServiceOfferingRepository serviceRepository, ReviewRepository reviews,
+                                  BookingRepository bookings) {
+        this.bookings = bookings;
         this.profileRepository = profileRepository;
         this.userRepository = userRepository;
         this.serviceRepository = serviceRepository;
@@ -89,6 +93,7 @@ public class ProviderProfileService {
                 profile.getServiceArea(), profile.getYearsOfExperience(), profile.isAvailable(),
                 user.getCreatedAt(), services, rating.map(RatingSummary::average).orElse(null),
                 rating.map(RatingSummary::count).orElse(0L),
-                MediaUrls.of(user.getAvatarId()), MediaUrls.of(profile.getPhotoIds()));
+                MediaUrls.of(user.getAvatarId()), MediaUrls.of(profile.getPhotoIds()),
+                bookings.countCompleted(providerId));
     }
 }

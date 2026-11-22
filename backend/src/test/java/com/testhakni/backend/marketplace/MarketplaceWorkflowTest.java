@@ -210,7 +210,6 @@ class MarketplaceWorkflowTest extends IntegrationTest {
         assertThat(call(customer,post(offers+"/"+id+"/accept"),200)).isEqualTo(booking);
         String path = "/api/bookings/"+booking.get("id").asText();
         call(stranger,get(path),403);
-        call(customer,post(path+"/confirm"),409);
         var feedback = Map.of("rating",5,"comment","Excellent service");
         call(customer,body(post(path+"/review"),feedback),409);
         call(pro,body(patch(path+"/status"),Map.of("status","IN_PROGRESS")),200);

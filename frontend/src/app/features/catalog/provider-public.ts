@@ -1,5 +1,5 @@
 import { ReviewsPanel } from '../marketplace/reviews';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -17,7 +17,7 @@ import { AuthService } from '../../core/services/auth.service';
 /** Profil public d'un prestataire et ses services (PROV-03 / SEARCH-04). FE-06 */
 @Component({
   selector: 'app-provider-public',
-  imports: [ReviewsPanel, RouterLink, DatePipe, ServiceCard, Icon, TranslatePipe, LocalDatePipe, ContactButton],
+  imports: [ReviewsPanel, RouterLink, DatePipe, DecimalPipe, ServiceCard, Icon, TranslatePipe, LocalDatePipe, ContactButton],
   template: `
     <section class="container">
       @if (error()) {
@@ -46,6 +46,12 @@ import { AuthService } from '../../core/services/auth.service';
           <div class="row">
             @for (c of p.categories; track c) { <span class="badge">{{ ('cat.' + c) | t }}</span> }
           </div>
+          <p class="stats">
+            <span class="badge accent"><app-icon name="check" [size]="14" /> {{ 'provider.jobs' | t: { n: p.completedJobs ?? 0 } }}</span>
+            @if (p.reviewCount) {
+              <span class="badge"><app-icon name="star" [size]="14" /> {{ p.averageRating | number: '1.1-1' }} · {{ 'provider.reviewsCount' | t: { n: p.reviewCount } }}</span>
+            }
+          </p>
           @if (auth.role() === 'CUSTOMER') {
             <div class="contact"><app-contact-button [userId]="p.providerId" /></div>
           }
@@ -79,6 +85,8 @@ import { AuthService } from '../../core/services/auth.service';
   `,
   styles: `
     .bio { white-space: pre-line; }
+    .stats { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 0; }
+    .stats .badge { display: inline-flex; align-items: center; gap: 0.3rem; }
     .contact { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--c-border); }
     .profile h1 { margin: 0; flex: 1; }
     .xl { width: 64px; height: 64px; font-size: 1.3rem; border-radius: 18px; background: linear-gradient(145deg, var(--c-primary), #1f9a80); }

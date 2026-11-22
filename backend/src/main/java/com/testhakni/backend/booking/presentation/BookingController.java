@@ -52,7 +52,15 @@ public class BookingController {
     @Operation(summary = "Client propriétaire · confirmer la fin")
     @PostMapping("/{id}/confirm")
     public Booking confirm(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable String id) {
-        return bookings.transition(user, id, BookingStatus.COMPLETED);
+        return bookings.customerSet(user, id, BookingStatus.COMPLETED);
+    }
+
+    @Operation(summary = "Client propriétaire · déclarer la prestation en cours, terminée ou l'annuler",
+            description = "Statuts acceptés : IN_PROGRESS, COMPLETED, CANCELLED. Une prestation terminée ne peut plus être annulée.")
+    @PatchMapping("/{id}/customer-status")
+    public Booking customerStatus(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable String id,
+                                  @Valid @RequestBody Progress body) {
+        return bookings.customerSet(user, id, body.status());
     }
 
     @Operation(summary = "Client propriétaire · noter une réservation confirmée")

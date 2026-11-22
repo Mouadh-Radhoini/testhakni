@@ -48,6 +48,10 @@ export class MarketplaceService {
   progress(id: string, status: BookingStatus) {
     return this.http.patch<Booking>(this.api + '/bookings/' + id + '/status', { status });
   }
+  /** Le client declare la prestation en cours, terminee ou l'annule. */
+  customerStatus(id: string, status: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED') {
+    return this.http.patch<Booking>(this.api + '/bookings/' + id + '/customer-status', { status });
+  }
   confirm(id: string) {
     return this.http.post<Booking>(this.api + '/bookings/' + id + '/confirm', {});
   }

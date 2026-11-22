@@ -59,6 +59,20 @@ class BookingRepositoryAdapter implements BookingRepository {
     }
 
     @Override
+    public Optional<Booking> transitionFrom(String id, java.util.Set<BookingStatus> allowed, Booking.Transition transition) {
+        return Optional.ofNullable(mongo.findAndModify(
+                Query.query(Criteria.where("_id").is(id).and("status").in(allowed)),
+                Update.update("status", transition.status()).push("history", transition),
+                FindAndModifyOptions.options().returnNew(true), Booking.class));
+    }
+
+    @Override
+    public long countCompleted(String providerId) {
+        return mongo.count(Query.query(Criteria.where("providerId").is(providerId)
+                .and("status").is(BookingStatus.COMPLETED)), Booking.class);
+    }
+
+    @Override
     public void markReviewed(String id) {
         mongo.updateFirst(Query.query(Criteria.where("_id").is(id)), Update.update("reviewed", true), Booking.class);
     }

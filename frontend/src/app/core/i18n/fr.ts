@@ -307,4 +307,6 @@ export const FR = {
   'title.Réservations': 'Réservations',
   'title.Notifications': 'Notifications',
   'title.Administration': 'Administration',
+  'provider.jobs': '{n} mission(s) terminée(s)',
+  'provider.reviewsCount': '{n} avis',
 };

@@ -293,4 +293,6 @@ export const AR: Dictionary = {
   'title.Réservations': 'الحجوزات',
   'title.Notifications': 'الإشعارات',
   'title.Administration': 'الإدارة',
+  'provider.jobs': '{n} مهمة منجزة',
+  'provider.reviewsCount': '{n} تقييم',
 };

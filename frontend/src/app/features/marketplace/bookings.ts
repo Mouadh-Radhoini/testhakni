@@ -11,7 +11,7 @@ import { Feedback, PageState } from './page-state';
 
 @Component({
   imports: [Feedback, RouterLink, DatePipe, ReactiveFormsModule],
-  styles: `.grow-title { flex: 1; margin: 0; } .badge { margin-inline-start: auto; }`,
+  styles: `.grow-title { flex: 1; margin: 0; } .badge { margin-inline-start: auto; } .client-actions { margin: 1rem 0; } .cancel-box { margin-top: 0.75rem; }`,
   template: `<section class="container">
     <h1>{{ id() ? 'Détail de la réservation' : 'Mes réservations' }}</h1>
     <app-feedback [state]="state" />
@@ -38,10 +38,47 @@ import { Feedback, PageState } from './page-state';
               {{ b.status === 'BOOKED' ? 'Démarrer le travail' : 'Déclarer le travail terminé' }}
             </button>
           }
-          @if (auth.role() === 'CUSTOMER' && b.status === 'AWAITING_CONFIRMATION') {
-            <button class="btn" [disabled]="state.loading()" (click)="confirm(b)">
-              Confirmer la fin des travaux
-            </button>
+          @if (auth.role() === 'CUSTOMER' && isOpen(b)) {
+            <div class="client-actions">
+              <p class="muted small">
+                @if (b.status === 'AWAITING_CONFIRMATION') {
+                  Le prestataire indique avoir terminé. Vérifiez le travail avant de confirmer.
+                } @else {
+                  Vous suivez l’avancement : mettez à jour l’état de la prestation.
+                }
+              </p>
+              <div class="row">
+                @if (b.status === 'BOOKED') {
+                  <button class="btn" type="button" [disabled]="state.loading()" (click)="customerSet(b, 'IN_PROGRESS')">
+                    Le prestataire a commencé
+                  </button>
+                }
+                <button class="btn" [class.secondary]="b.status === 'BOOKED'" type="button" [disabled]="state.loading()"
+                        (click)="customerSet(b, 'COMPLETED')">
+                  {{ b.status === 'AWAITING_CONFIRMATION' ? 'Confirmer la fin des travaux' : 'Marquer comme terminée' }}
+                </button>
+                @if (!confirmingCancel()) {
+                  <button class="btn danger" type="button" [disabled]="state.loading()" (click)="confirmingCancel.set(true)">
+                    Annuler la réservation
+                  </button>
+                }
+              </div>
+              @if (confirmingCancel()) {
+                <div class="alert info cancel-box" role="alertdialog">
+                  <strong>Annuler cette réservation ?</strong>
+                  Le prestataire sera prévenu et la demande sera annulée. Vous ne pourrez plus revenir en arrière.
+                  <div class="row mt">
+                    <button class="btn danger small" type="button" [disabled]="state.loading()" (click)="customerSet(b, 'CANCELLED')">
+                      Oui, annuler
+                    </button>
+                    <button class="btn secondary small" type="button" (click)="confirmingCancel.set(false)">Non, garder</button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+          @if (b.status === 'CANCELLED') {
+            <p class="alert info">Cette réservation a été annulée.</p>
           }
           @if (auth.role() === 'CUSTOMER' && b.status === 'COMPLETED' && !b.reviewed) {
             <form class="form" [formGroup]="form" (ngSubmit)="review(b)">
@@ -104,12 +141,19 @@ export class BookingsPage implements OnInit {
       'Progression enregistrée.',
     );
   }
-  confirm(b: Booking) {
-    this.state.run(
-      this.api.confirm(b.id),
-      (updated) => this.bookings.set([updated]),
-      'Travaux confirmés.',
-    );
+  readonly confirmingCancel = signal(false);
+  /** Reservation encore en cours de route : le client peut la faire avancer ou l'annuler. */
+  isOpen(b: Booking): boolean {
+    return b.status === 'BOOKED' || b.status === 'IN_PROGRESS' || b.status === 'AWAITING_CONFIRMATION';
+  }
+  customerSet(b: Booking, status: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED') {
+    const messages = {
+      IN_PROGRESS: 'La prestation est marquée en cours.',
+      COMPLETED: 'Prestation terminée : vous pouvez laisser un avis.',
+      CANCELLED: 'Réservation annulée.',
+    };
+    this.confirmingCancel.set(false);
+    this.state.run(this.api.customerStatus(b.id, status), (updated) => this.bookings.set([updated]), messages[status]);
   }
   review(b: Booking) {
     const value = this.form.getRawValue();

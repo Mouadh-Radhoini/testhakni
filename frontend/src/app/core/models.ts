@@ -128,6 +128,8 @@ export interface ProviderPublic {
   memberSince: string;
   averageRating: number | null;
   reviewCount: number;
+  /** Prestations terminees : l'experience du prestataire sur la plateforme. */
+  completedJobs?: number;
   services: Service[];
   avatarUrl: string | null;
   photoUrls: string[];

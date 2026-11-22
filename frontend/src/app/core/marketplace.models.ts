@@ -23,7 +23,7 @@ export interface Offer extends Proposal {
   status: 'SUBMITTED' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
   createdAt: string;
 }
-export type BookingStatus = 'BOOKED' | 'IN_PROGRESS' | 'AWAITING_CONFIRMATION' | 'COMPLETED';
+export type BookingStatus = 'BOOKED' | 'IN_PROGRESS' | 'AWAITING_CONFIRMATION' | 'COMPLETED' | 'CANCELLED';
 export interface Booking {
   id: string;
   requestId: string;
@@ -88,4 +88,5 @@ export const bookingLabels: Record<BookingStatus, string> = {
   IN_PROGRESS: 'En cours',
   AWAITING_CONFIRMATION: 'À confirmer',
   COMPLETED: 'Terminée',
+  CANCELLED: 'Annulée',
 };
