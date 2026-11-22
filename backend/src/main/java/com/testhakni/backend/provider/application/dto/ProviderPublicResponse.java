@@ -23,5 +23,7 @@ public record ProviderPublicResponse(
         Integer yearsOfExperience,
         boolean available,
         Instant memberSince,
-        List<ServiceResponse> services, Double averageRating, long reviewCount) {
+        List<ServiceResponse> services, Double averageRating, long reviewCount,
+        String avatarUrl,
+        List<String> photoUrls) {
 }

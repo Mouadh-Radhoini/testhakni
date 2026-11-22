@@ -17,6 +17,8 @@ import com.testhakni.backend.provider.domain.model.ProviderProfile;
 import com.testhakni.backend.provider.domain.repository.ProviderProfileRepository;
 import com.testhakni.backend.review.domain.model.RatingSummary;
 import com.testhakni.backend.review.domain.repository.ReviewRepository;
+import com.testhakni.backend.identity.domain.model.AuthenticatedUser;
+import com.testhakni.backend.shared.application.MediaUrls;
 import com.testhakni.backend.shared.domain.Text;
 import com.testhakni.backend.shared.domain.exception.DomainException;
 import org.springframework.stereotype.Service;
@@ -65,6 +67,11 @@ public class ProviderProfileService {
 
     /** Profil public : sans email ni telephone. 404 si le prestataire n'existe pas ou n'est pas actif. */
     public ProviderPublicResponse getPublic(String providerId) {
+        return getPublic(providerId, null);
+    }
+
+    /** Variante sensible au visiteur : sans compte, les services sont montres en apercu sans prix. */
+    public ProviderPublicResponse getPublic(String providerId, AuthenticatedUser viewer) {
         User user = userRepository.findById(providerId)
                 .filter(u -> u.getRole() == Role.PROVIDER && u.isActive())
                 .orElseThrow(() -> DomainException.notFound("Prestataire introuvable"));
@@ -74,13 +81,14 @@ public class ProviderProfileService {
         ProviderSummary summary = ProviderSummary.from(profile);
         List<ServiceResponse> services = serviceRepository
                 .findByProviderIdAndStatus(providerId, ServiceStatus.ACTIVE)
-                .stream().map(s -> ServiceResponse.from(s, summary)).toList();
+                .stream().map(s -> viewer == null ? ServiceResponse.teaser(s) : ServiceResponse.from(s, summary)).toList();
 
         var rating = reviews.rating(providerId);
         return new ProviderPublicResponse(providerId, user.displayName(), profile.getBusinessName(),
                 profile.getBio(), profile.getCategories(), profile.getSkills(), profile.getCity(),
                 profile.getServiceArea(), profile.getYearsOfExperience(), profile.isAvailable(),
                 user.getCreatedAt(), services, rating.map(RatingSummary::average).orElse(null),
-                rating.map(RatingSummary::count).orElse(0L));
+                rating.map(RatingSummary::count).orElse(0L),
+                MediaUrls.of(user.getAvatarId()), MediaUrls.of(profile.getPhotoIds()));
     }
 }

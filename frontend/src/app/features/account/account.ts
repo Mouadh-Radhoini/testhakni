@@ -11,14 +11,19 @@ import {
 } from '../../core/api-error';
 import { AccountService } from '../../core/services/account.service';
 import { AuthService } from '../../core/services/auth.service';
+import { AvatarUploader } from '../../shared/avatar-uploader';
 
 /** Mon compte : informations personnelles et mot de passe (AUTH-09 / AUTH-07). FE-04 */
 @Component({
   selector: 'app-account',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, AvatarUploader],
   template: `
     <section class="container narrow">
       <h1>Mon compte</h1>
+
+      <div class="card mb">
+        <app-avatar-uploader />
+      </div>
 
       <div class="card mb">
         <h2>Informations personnelles</h2>

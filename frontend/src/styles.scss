@@ -191,7 +191,7 @@ input[type='checkbox'], input[type='radio'] { width: auto; accent-color: var(--c
 
 /* ------------------------------------------------------------- messages */
 .alert {
-  display: flex; gap: 0.6rem; align-items: flex-start;
+  display: block;
   padding: 0.85rem 1rem; border-radius: var(--radius-sm); font-size: 0.94rem; font-weight: 500;
   border: 1px solid transparent; margin: 0 0 1rem;
 }
@@ -258,7 +258,7 @@ tr:last-child td { border-bottom: 0; }
 .stat span { color: var(--c-muted); font-size: 0.86rem; font-weight: 600; }
 
 /* Libellés qui englobent directement leur champ (<label>Texte<select>…</select></label>) */
-label:not(.search-field):has(> select, > textarea, > input:not([type='checkbox']):not([type='radio'])) {
+label:not(.search-field):has(> select, > textarea, > input:not([type='checkbox']):not([type='radio']):not([type='file'])) {
   display: flex; flex-direction: column; gap: 0.35rem; font-weight: 650; font-size: 0.88rem; margin-bottom: 0.75rem;
 }
 

@@ -23,12 +23,21 @@ public record ServiceResponse(
         ServiceStatus status,
         Instant createdAt,
         Instant updatedAt,
-        ProviderSummary provider) {
+        ProviderSummary provider,
+        /** true pour un visiteur non connecte : prix, description et prestataire masques. */
+        boolean locked) {
 
     public static ServiceResponse from(ServiceOffering s, ProviderSummary provider) {
         return new ServiceResponse(s.getId(), s.getProviderId(), s.getTitle(), s.getDescription(),
                 s.getCategory(), s.getCategory() == null ? null : s.getCategory().getLabel(),
                 s.getCity(), s.getPrice(), s.getPriceType(), s.getStatus(),
-                s.getCreatedAt(), s.getUpdatedAt(), provider);
+                s.getCreatedAt(), s.getUpdatedAt(), provider, false);
+    }
+
+    /** Apercu pour visiteur anonyme : titre, categorie et ville seulement (prix reserve aux inscrits). */
+    public static ServiceResponse teaser(ServiceOffering s) {
+        return new ServiceResponse(s.getId(), s.getProviderId(), s.getTitle(), null,
+                s.getCategory(), s.getCategory() == null ? null : s.getCategory().getLabel(),
+                s.getCity(), null, null, s.getStatus(), s.getCreatedAt(), s.getUpdatedAt(), null, true);
     }
 }

@@ -64,6 +64,8 @@ export const routes: Routes = [
   { path: 'requests/:id/offers', canActivate: [roleGuard('CUSTOMER')], loadComponent: () => import('./features/marketplace/offers').then(m => m.OffersPage) },
   { path: 'bookings', canActivate: [roleGuard('CUSTOMER','PROVIDER')], loadComponent: () => import('./features/marketplace/bookings').then(m => m.BookingsPage) },
   { path: 'bookings/:id', canActivate: [roleGuard('CUSTOMER','PROVIDER')], loadComponent: () => import('./features/marketplace/bookings').then(m => m.BookingsPage) },
+  { path: 'messages', canActivate: [roleGuard('CUSTOMER','PROVIDER')], title: 'Messages' + T, loadComponent: () => import('./features/messaging/messages').then(m => m.MessagesPage) },
+  { path: 'messages/:id', canActivate: [roleGuard('CUSTOMER','PROVIDER')], title: 'Messages' + T, loadComponent: () => import('./features/messaging/messages').then(m => m.MessagesPage) },
   { path: 'notifications', canActivate: [authGuard], loadComponent: () => import('./features/marketplace/notifications').then(m => m.NotificationsPage) },
   { path: 'admin/dashboard', canActivate: [roleGuard('ADMIN')], data: {section:'dashboard'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
   { path: 'admin/users', canActivate: [roleGuard('ADMIN')], data: {section:'users'}, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },

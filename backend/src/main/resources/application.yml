@@ -3,8 +3,11 @@ spring:
     deserialization:
       accept-float-as-int: false
   servlet:
+    # Envoi d'images (photo de profil, realisations) : 2 Mo par fichier
     multipart:
-      enabled: false
+      enabled: true
+      max-file-size: 2MB
+      max-request-size: 3MB
   application:
     name: testhakni-backend
   profiles:

@@ -1,5 +1,7 @@
 package com.testhakni.backend.provider.application.dto;
 
+import com.testhakni.backend.shared.application.MediaUrls;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -19,11 +21,12 @@ public record ProviderProfileResponse(
         Integer yearsOfExperience,
         boolean available,
         Instant createdAt,
-        Instant updatedAt) {
+        Instant updatedAt,
+        List<String> photoUrls) {
 
     public static ProviderProfileResponse from(ProviderProfile p) {
         return new ProviderProfileResponse(p.getId(), p.getUserId(), p.getBusinessName(), p.getBio(),
                 p.getCategories(), p.getSkills(), p.getCity(), p.getServiceArea(), p.getYearsOfExperience(),
-                p.isAvailable(), p.getCreatedAt(), p.getUpdatedAt());
+                p.isAvailable(), p.getCreatedAt(), p.getUpdatedAt(), MediaUrls.of(p.getPhotoIds()));
     }
 }

@@ -19,7 +19,11 @@ import { PricePipe } from './price.pipe';
         }
       </div>
       <h3>{{ service().title }}</h3>
-      <p class="desc">{{ service().description }}</p>
+      @if (service().locked) {
+        <p class="desc locked-text">Créez un compte gratuit pour voir la description, le prix et le prestataire.</p>
+      } @else {
+        <p class="desc">{{ service().description }}</p>
+      }
       <div class="meta">
         <span><app-icon name="pin" [size]="15" /> {{ service().city }}</span>
         @if (service().provider; as p) {
@@ -27,7 +31,11 @@ import { PricePipe } from './price.pipe';
         }
       </div>
       <div class="foot">
-        <span class="price">{{ service().price | price: service().priceType }}</span>
+        @if (service().locked || !service().priceType) {
+          <span class="lock"><app-icon name="shield" [size]="15" /> Prix réservé aux membres</span>
+        } @else {
+          <span class="price">{{ service().price | price: service().priceType! }}</span>
+        }
         <span class="go">Voir <app-icon name="arrow" [size]="16" /></span>
       </div>
     </a>
@@ -52,6 +60,9 @@ import { PricePipe } from './price.pipe';
     .foot { display: flex; align-items: center; justify-content: space-between;
       padding-top: 0.8rem; margin-top: 0.2rem; border-top: 1px solid var(--c-border); }
     .price { font-size: 1.05rem; }
+    .lock { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; font-weight: 700;
+      color: var(--c-accent-dark); background: var(--c-accent-soft); padding: 0.25rem 0.6rem; border-radius: 999px; }
+    .locked-text { font-style: italic; }
     .go { display: inline-flex; align-items: center; gap: 0.25rem; color: var(--c-primary); font-weight: 700; font-size: 0.88rem; }
   `,
 })

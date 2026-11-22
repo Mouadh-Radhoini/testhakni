@@ -37,6 +37,9 @@ public class User {
     private String phone;
     private String city;
 
+    /** Photo de profil (id du fichier en GridFS), null si aucune. */
+    private String avatarId;
+
     @Indexed
     private Role role;
 

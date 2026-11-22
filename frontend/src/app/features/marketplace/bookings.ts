@@ -5,6 +5,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Booking, bookingLabels } from '../../core/marketplace.models';
 import { AuthService } from '../../core/services/auth.service';
 import { MarketplaceService } from '../../core/services/marketplace.service';
+import { MessagingService } from '../../core/services/messaging.service';
+import { Router } from '@angular/router';
 import { Feedback, PageState } from './page-state';
 
 @Component({
@@ -59,7 +61,12 @@ import { Feedback, PageState } from './page-state';
               </button>
             </form>
           }
-          <p class="mt"><a routerLink="/bookings">← Toutes mes réservations</a></p>
+          <div class="row mt">
+            <button class="btn secondary" type="button" (click)="chat(b)">
+              {{ auth.role() === 'PROVIDER' ? 'Écrire au client' : 'Écrire au prestataire' }}
+            </button>
+            <a routerLink="/bookings">← Toutes mes réservations</a>
+          </div>
         }
       </article>
     } @empty {
@@ -75,6 +82,11 @@ export class BookingsPage implements OnInit {
   readonly auth = inject(AuthService);
   private readonly api = inject(MarketplaceService);
   readonly labels = bookingLabels;
+  private readonly messaging = inject(MessagingService);
+  private readonly router = inject(Router);
+  chat(b: Booking) {
+    this.state.run(this.messaging.openForBooking(b.id), (c) => this.router.navigate(['/messages', c.id]));
+  }
   readonly bookings = signal<Booking[]>([]);
   readonly form = inject(FormBuilder).nonNullable.group({
     rating: [5, Validators.required],

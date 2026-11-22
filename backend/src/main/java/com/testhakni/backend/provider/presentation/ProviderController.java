@@ -46,7 +46,8 @@ public class ProviderController {
     @SecurityRequirements
     @Operation(summary = "Profil public d'un prestataire et ses services actifs",
             description = "Sans email ni telephone. 404 si le prestataire n'existe pas.")
-    public ProviderPublicResponse publicProfile(@PathVariable String providerId) {
-        return profileService.getPublic(providerId);
+    public ProviderPublicResponse publicProfile(@PathVariable String providerId,
+                                                @Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser viewer) {
+        return profileService.getPublic(providerId, viewer);
     }
 }

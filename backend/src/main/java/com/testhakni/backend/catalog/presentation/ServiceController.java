@@ -65,8 +65,9 @@ public class ServiceController {
             @RequestParam(required = false) @DecimalMin(value = "0", message = "Doit etre positif") BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") @Min(value = 0, message = "Doit etre >= 0") int page,
             @RequestParam(defaultValue = "12") @Min(value = 1, message = "Doit etre >= 1") @Max(value = 50, message = "50 maximum") int size,
-            @RequestParam(defaultValue = "NEWEST") SortOption sort) {
-        return serviceService.search(new SearchCriteria(q, category, city, minPrice, maxPrice), page, size, sort);
+            @RequestParam(defaultValue = "NEWEST") SortOption sort,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser viewer) {
+        return serviceService.search(new SearchCriteria(q, category, city, minPrice, maxPrice), page, size, sort, viewer);
     }
 
     @GetMapping("/mine")

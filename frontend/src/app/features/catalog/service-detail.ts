@@ -33,12 +33,31 @@ import { CATEGORY_ICONS, Icon } from '../../shared/icon';
             </div>
             <h1 class="mt">{{ s.title }}</h1>
             <p class="muted meta"><app-icon name="pin" [size]="16" /> {{ s.city }} · publié le {{ s.createdAt | date: 'dd/MM/yyyy' }}</p>
-            <p class="description">{{ s.description }}</p>
+            @if (s.locked) {
+              <div class="locked">
+                <span class="icon-tile accent"><app-icon name="shield" [size]="22" /></span>
+                <div>
+                  <h2>Détails réservés aux membres</h2>
+                  <p class="muted">La description, le prix et le prestataire sont visibles une fois connecté. L'inscription est gratuite et prend deux minutes.</p>
+                  <div class="row">
+                    <a class="btn" routerLink="/register">Créer un compte gratuit</a>
+                    <a class="btn secondary" routerLink="/login" [queryParams]="{ returnUrl: '/services/' + s.id }">Se connecter</a>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <p class="description">{{ s.description }}</p>
+            }
           </article>
 
           <aside class="card side">
-            <p class="big price">{{ s.price | price: s.priceType }}</p>
-            <p class="muted small">{{ priceTypeLabel[s.priceType] }}</p>
+            @if (s.locked || !s.priceType) {
+              <p class="big price blurred" aria-hidden="true">000 DT</p>
+              <p class="muted small">Prix visible après connexion</p>
+            } @else {
+              <p class="big price">{{ s.price | price: s.priceType! }}</p>
+              <p class="muted small">{{ priceTypeLabel[s.priceType!] }}</p>
+            }
 
             @if (auth.role() === 'CUSTOMER') {
               <a class="btn" routerLink="/requests/new"
@@ -81,6 +100,10 @@ import { CATEGORY_ICONS, Icon } from '../../shared/icon';
     .back { margin-bottom: 1rem; }
     .layout .card:first-child { padding: 2rem; }
     .description { font-size: 1.02rem; line-height: 1.7; }
+    .blurred { filter: blur(7px); user-select: none; }
+    .locked { display: flex; gap: 1rem; align-items: flex-start; margin-top: 1rem; padding: 1.2rem;
+      border-radius: var(--radius); background: var(--c-accent-soft); }
+    .locked h2 { margin: 0 0 0.3rem; font-size: 1.1rem; }
   `,
 })
 export class ServiceDetail implements OnInit {

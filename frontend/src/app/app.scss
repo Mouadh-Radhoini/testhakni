@@ -47,6 +47,13 @@
   padding: 0.25rem 0.75rem 0.25rem 0.25rem; border-radius: 999px; color: var(--c-text);
   &:hover, &.active { background: rgba(23, 32, 29, 0.05); text-decoration: none; color: var(--c-text); }
 }
+.with-count { display: inline-flex; align-items: center; gap: 0.4rem; }
+.count {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
+  background: var(--c-accent); color: #2b1a00; font-size: 0.72rem; font-weight: 800;
+  display: inline-grid; place-items: center;
+}
+.photo { object-fit: cover; padding: 0; }
 .who-text { display: flex; flex-direction: column; line-height: 1.15; }
 .who-name { font-weight: 700; font-size: 0.9rem; }
 .who-role { font-weight: 600; font-size: 0.72rem; color: var(--c-muted); }

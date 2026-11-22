@@ -112,7 +112,7 @@ class ServiceControllerTest extends IntegrationTest {
                 .andExpect(jsonPath("$.content[0].title").value("Reparation fuite"));
         mockMvc.perform(get("/api/services").param("category", "PLOMBERIE").param("city", "tun"))
                 .andExpect(jsonPath("$.totalElements").value(1));
-        mockMvc.perform(get("/api/services").param("minPrice", "50").param("maxPrice", "200").param("sort", "PRICE_DESC"))
+        mockMvc.perform(withToken(get("/api/services").param("minPrice", "50").param("maxPrice", "200").param("sort", "PRICE_DESC"), t))
                 .andExpect(jsonPath("$.totalElements").value(2))
                 .andExpect(jsonPath("$.content[0].title").value("Chauffe-eau"));
         mockMvc.perform(get("/api/services").param("size", "2").param("page", "1"))
@@ -129,7 +129,8 @@ class ServiceControllerTest extends IntegrationTest {
         mockMvc.perform(get("/api/services").param("category", "INCONNUE"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors.category").exists());
-        mockMvc.perform(get("/api/services").param("minPrice", "100").param("maxPrice", "10"))
+        String t = token(registerCustomer("filtres@mail.com"));
+        mockMvc.perform(withToken(get("/api/services").param("minPrice", "100").param("maxPrice", "10"), t))
                 .andExpect(status().isBadRequest());
         mockMvc.perform(get("/api/services").param("size", "500"))
                 .andExpect(status().isBadRequest());
@@ -170,5 +171,39 @@ class ServiceControllerTest extends IntegrationTest {
                 .andExpect(jsonPath("$.fieldErrors.businessName").exists())
                 .andExpect(jsonPath("$.fieldErrors.categories").exists())
                 .andExpect(jsonPath("$.fieldErrors.yearsOfExperience").exists());
+    }
+
+    // ------------------------------------------------------------ prix reserves aux inscrits
+
+    @Test
+    void visitorsSeeATeaserWithoutPriceOrDetails() throws Exception {
+        String t = token(registerProvider("teaser@mail.com"));
+        String id = createService(t, service("Reparation fuite", "PLOMBERIE", "Tunis", "60"));
+
+        mockMvc.perform(get("/api/services"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].title").value("Reparation fuite"))
+                .andExpect(jsonPath("$.content[0].city").value("Tunis"))
+                .andExpect(jsonPath("$.content[0].locked").value(true))
+                .andExpect(jsonPath("$.content[0].price").doesNotExist())
+                .andExpect(jsonPath("$.content[0].description").doesNotExist())
+                .andExpect(jsonPath("$.content[0].provider").doesNotExist());
+        mockMvc.perform(get("/api/services/" + id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.locked").value(true))
+                .andExpect(jsonPath("$.price").doesNotExist());
+
+        String customer = token(registerCustomer("inscrit@mail.com"));
+        mockMvc.perform(withToken(get("/api/services/" + id), customer))
+                .andExpect(jsonPath("$.locked").value(false))
+                .andExpect(jsonPath("$.price").value(60))
+                .andExpect(jsonPath("$.description").exists());
+    }
+
+    @Test
+    void priceFiltersAndSortingRequireAnAccount() throws Exception {
+        mockMvc.perform(get("/api/services").param("maxPrice", "100")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/services").param("sort", "PRICE_ASC")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/services").param("sort", "NEWEST")).andExpect(status().isOk());
     }
 }

@@ -77,22 +77,42 @@ public class ServiceOfferingService {
 
     // ---------------------------------------------------------------- public
 
-    /** Detail d'un service. Visible par tous s'il est ACTIVE ; sinon seulement par son proprietaire. */
+    /**
+     * Detail d'un service. Visible par tous s'il est ACTIVE ; sinon seulement par son proprietaire.
+     * Un visiteur sans compte n'en voit qu'un apercu : prix, description et prestataire sont reserves aux inscrits.
+     */
     public ServiceResponse getById(String serviceId, AuthenticatedUser viewer) {
         ServiceOffering service = serviceRepository.findById(serviceId)
                 .filter(s -> s.getStatus() == ServiceStatus.ACTIVE
                         || (viewer != null && viewer.id().equals(s.getProviderId())))
                 .orElseThrow(() -> DomainException.notFound("Service introuvable"));
-        return toResponse(service);
+        return viewer == null ? ServiceResponse.teaser(service) : toResponse(service);
     }
 
-    /** Recherche paginee parmi les services ACTIVE uniquement. */
-    public PageResponse<ServiceResponse> search(SearchCriteria c, int page, int size, SortOption sort) {
+    /** Verifie seulement que le service est visible publiquement (404 sinon). */
+    public void requireVisible(String serviceId) {
+        serviceRepository.findById(serviceId)
+                .filter(s -> s.getStatus() == ServiceStatus.ACTIVE)
+                .orElseThrow(() -> DomainException.notFound("Service introuvable"));
+    }
+
+    /**
+     * Recherche paginee parmi les services ACTIVE uniquement.
+     * Les prix etant reserves aux inscrits, filtrer ou trier par prix exige d'etre connecte.
+     */
+    public PageResponse<ServiceResponse> search(SearchCriteria c, int page, int size, SortOption sort,
+                                                AuthenticatedUser viewer) {
+        boolean usesPrice = c.minPrice() != null || c.maxPrice() != null || sort != SortOption.NEWEST;
+        if (viewer == null && usesPrice) {
+            throw DomainException.unauthorized("Connectez-vous pour filtrer ou trier par prix");
+        }
         if (c.minPrice() != null && c.maxPrice() != null && c.minPrice().compareTo(c.maxPrice()) > 0) {
             throw DomainException.badRequest("Le prix minimum doit etre inferieur ou egal au prix maximum");
         }
         PageResponse<ServiceOffering> result = serviceRepository.searchActive(c, page, size, sort);
-        List<ServiceResponse> content = toResponses(result.content());
+        List<ServiceResponse> content = viewer == null
+                ? result.content().stream().map(ServiceResponse::teaser).toList()
+                : toResponses(result.content());
         return new PageResponse<>(content, result.page(), result.size(), result.totalElements(),
                 result.totalPages(), result.first(), result.last());
     }

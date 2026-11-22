@@ -24,7 +24,11 @@ import { Icon } from '../../shared/icon';
       } @else if (provider(); as p) {
         <div class="card mb profile">
           <div class="row">
-            <span class="avatar xl">{{ p.businessName.slice(0, 2).toUpperCase() }}</span>
+            @if (p.avatarUrl) {
+              <img class="avatar xl photo" [src]="p.avatarUrl" [alt]="'Photo de ' + p.displayName" />
+            } @else {
+              <span class="avatar xl">{{ p.businessName.slice(0, 2).toUpperCase() }}</span>
+            }
             <h1>{{ p.businessName }}</h1>
             <span class="badge" [class.ACTIVE]="p.available">{{ p.available ? 'Disponible' : 'Indisponible' }}</span>
           </div>
@@ -42,6 +46,15 @@ import { Icon } from '../../shared/icon';
             <p class="small mt"><strong>Compétences :</strong> {{ p.skills.join(', ') }}</p>
           }
         </div>
+
+        @if (p.photoUrls.length) {
+          <h2>Réalisations</h2>
+          <div class="gallery">
+            @for (url of p.photoUrls; track url) {
+              <a [href]="url" target="_blank" rel="noopener"><img [src]="url" alt="Réalisation de {{ p.businessName }}" loading="lazy" /></a>
+            }
+          </div>
+        }
 
         <h2>Services proposés ({{ p.services.length }})</h2>
         @if (p.services.length === 0) {
@@ -63,6 +76,11 @@ import { Icon } from '../../shared/icon';
     .xl { width: 64px; height: 64px; font-size: 1.3rem; border-radius: 18px; background: linear-gradient(145deg, var(--c-primary), #1f9a80); }
     .inline { vertical-align: -2px; display: inline-flex; }
     h2 { margin-top: 2rem; }
+    .photo { object-fit: cover; padding: 0; }
+    .gallery { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+    .gallery a { display: block; aspect-ratio: 4 / 3; border-radius: var(--radius); overflow: hidden; background: var(--c-surface-2); }
+    .gallery img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
+    .gallery a:hover img { transform: scale(1.04); }
   `,
 })
 export class ProviderPublicPage implements OnInit {

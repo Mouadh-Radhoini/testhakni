@@ -30,6 +30,10 @@
         }
         @if (auth.hasRole('CUSTOMER', 'PROVIDER')) {
           <a routerLink="/bookings" routerLinkActive="active">Réservations</a>
+          <a routerLink="/messages" routerLinkActive="active" class="with-count">
+            Messages
+            @if (messaging.unread()) { <span class="count">{{ messaging.unread() > 9 ? '9+' : messaging.unread() }}</span> }
+          </a>
         }
         @if (auth.role() === 'ADMIN') {
           <a routerLink="/admin/dashboard" routerLinkActive="active">Administration</a>
@@ -40,7 +44,11 @@
         @if (auth.user(); as user) {
           <app-notification-bell />
           <a routerLink="/account" routerLinkActive="active" class="who" title="Mon compte">
-            <span class="avatar">{{ initials() }}</span>
+            @if (user.avatarUrl) {
+              <img class="avatar photo" [src]="user.avatarUrl" alt="" />
+            } @else {
+              <span class="avatar">{{ initials() }}</span>
+            }
             <span class="who-text">
               <span class="who-name">{{ user.firstName }}</span>
               <span class="who-role">{{ roleLabel() }}</span>

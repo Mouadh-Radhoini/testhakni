@@ -50,6 +50,10 @@ public class ProviderProfile {
 
     private Integer yearsOfExperience;
 
+    /** Photos de realisations (ids GridFS), dans l'ordre d'ajout. */
+    @Builder.Default
+    private List<String> photoIds = new ArrayList<>();
+
     @Builder.Default
     private boolean available = true;
 

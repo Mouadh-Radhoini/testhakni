@@ -1,5 +1,7 @@
 package com.testhakni.backend.identity.application.dto;
 
+import com.testhakni.backend.shared.application.MediaUrls;
+
 import java.time.Instant;
 
 import com.testhakni.backend.identity.domain.model.AccountStatus;
@@ -16,10 +18,12 @@ public record UserResponse(
         String city,
         Role role,
         AccountStatus status,
-        Instant createdAt) {
+        Instant createdAt,
+        String avatarUrl) {
 
     public static UserResponse from(User u) {
         return new UserResponse(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(),
-                u.getPhone(), u.getCity(), u.getRole(), u.getStatus(), u.getCreatedAt());
+                u.getPhone(), u.getCity(), u.getRole(), u.getStatus(), u.getCreatedAt(),
+                MediaUrls.of(u.getAvatarId()));
     }
 }

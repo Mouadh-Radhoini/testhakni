@@ -106,7 +106,7 @@ export class ServiceForm implements OnInit {
           description: s.description,
           category: s.category,
           city: s.city,
-          priceType: s.priceType,
+          priceType: s.priceType ?? 'FIXED',
           price: s.price,
         });
         this.onPriceTypeChange();

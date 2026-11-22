@@ -120,6 +120,17 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.METHOD_NOT_ALLOWED, "Methode HTTP non supportee", req);
     }
 
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> handleTooLarge(HttpServletRequest req) {
+        return build(HttpStatus.PAYLOAD_TOO_LARGE, "Fichier trop lourd (2 Mo maximum)", req);
+    }
+
+    @ExceptionHandler({org.springframework.web.multipart.support.MissingServletRequestPartException.class,
+            org.springframework.web.multipart.MultipartException.class})
+    public ResponseEntity<ApiError> handleMultipart(HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, "Envoyez l'image dans le champ \"file\" (multipart/form-data)", req);
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ApiError> handleNoResource(NoResourceFoundException ex, HttpServletRequest req) {
         return build(HttpStatus.NOT_FOUND, "Ressource introuvable", req);

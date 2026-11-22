@@ -6,6 +6,7 @@ import { filter } from 'rxjs';
 import { NotificationBell } from './features/marketplace/notifications';
 import { AuthService } from './core/services/auth.service';
 import { Icon } from './shared/icon';
+import { MessagingService } from './core/services/messaging.service';
 
 const ROLE_LABELS = { CUSTOMER: 'Client', PROVIDER: 'Prestataire', ADMIN: 'Administrateur' } as const;
 
@@ -18,6 +19,7 @@ const ROLE_LABELS = { CUSTOMER: 'Client', PROVIDER: 'Prestataire', ADMIN: 'Admin
 })
 export class App {
   protected readonly auth = inject(AuthService);
+  protected readonly messaging = inject(MessagingService);
   protected readonly menuOpen = signal(false);
   protected readonly year = new Date().getFullYear();
 

@@ -36,7 +36,7 @@ import { PricePipe } from '../../shared/price.pipe';
                   <strong>{{ s.title }}</strong>
                   <span class="badge" [class]="s.status">{{ statusLabel[s.status] }}</span>
                 </div>
-                <span class="muted small">{{ s.categoryLabel }} · {{ s.city }} · {{ s.price | price: s.priceType }}</span>
+                <span class="muted small">{{ s.categoryLabel }} · {{ s.city }} · {{ s.price | price: s.priceType! }}</span>
               </div>
               <div class="row">
                 @if (s.status === 'ACTIVE') {

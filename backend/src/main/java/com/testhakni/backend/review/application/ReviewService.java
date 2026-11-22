@@ -28,7 +28,7 @@ public class ReviewService {
 
     /** 404 si le service n'est pas visible publiquement. */
     public PublicReviews forService(String serviceId) {
-        catalogue.getById(serviceId, null);
+        catalogue.requireVisible(serviceId);
         return PublicReviews.from(reviews.findVisibleByServiceId(serviceId));
     }
 }

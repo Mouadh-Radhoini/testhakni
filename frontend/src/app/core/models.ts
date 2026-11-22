@@ -27,6 +27,7 @@ export interface User {
   role: Role;
   status: 'ACTIVE' | 'SUSPENDED';
   createdAt: string;
+  avatarUrl?: string | null;
 }
 
 export interface AuthResponse {
@@ -59,11 +60,14 @@ export interface Service {
   categoryLabel: string;
   city: string;
   price: number | null;
-  priceType: PriceType;
+  /** null quand le service est verrouille (visiteur sans compte). */
+  priceType: PriceType | null;
   status: ServiceStatus;
   createdAt: string;
   updatedAt: string;
   provider: ProviderSummary | null;
+  /** true pour un visiteur sans compte : prix, description et prestataire masques par le serveur. */
+  locked?: boolean;
 }
 
 export interface ServicePayload {
@@ -107,6 +111,7 @@ export interface ProviderProfile {
   serviceArea: string | null;
   yearsOfExperience: number | null;
   available: boolean;
+  photoUrls?: string[];
 }
 
 export interface ProviderPublic {
@@ -124,6 +129,8 @@ export interface ProviderPublic {
   averageRating: number | null;
   reviewCount: number;
   services: Service[];
+  avatarUrl: string | null;
+  photoUrls: string[];
 }
 
 export interface ServiceRequest {

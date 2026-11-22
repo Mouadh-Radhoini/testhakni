@@ -70,6 +70,22 @@ cd backend
 
 Codes d'erreur : `400` données invalides (détail dans `fieldErrors`), `401` non connecté ou token invalide, `403` mauvais rôle ou ressource d'un autre utilisateur, `404` introuvable, `409` conflit (email déjà pris, demande plus ouverte).
 
+## Photos et messagerie
+
+| Méthode | URL | Accès | Rôle |
+|---|---|---|---|
+| GET | `/api/media/{id}` | public | Lire une image |
+| PUT / DELETE | `/api/users/me/avatar` | connecté | Changer / supprimer sa photo de profil (`multipart/form-data`, champ `file`) |
+| POST | `/api/providers/me/photos` | PROVIDER | Ajouter une photo de réalisation (6 max) |
+| DELETE | `/api/providers/me/photos/{id}` | PROVIDER | Supprimer une de ses photos |
+| GET | `/api/conversations` | CUSTOMER, PROVIDER | Mes conversations (avec nombre de non-lus) |
+| GET | `/api/conversations/unread` | CUSTOMER, PROVIDER | Total des messages non lus |
+| POST | `/api/conversations/by-offer/{offerId}` | client de la demande ou prestataire de l'offre | Ouvrir / retrouver le fil |
+| POST | `/api/conversations/by-booking/{bookingId}` | participants | Ouvrir / retrouver le fil d'une réservation |
+| GET / POST | `/api/conversations/{id}/messages` | participants | Historique (50 par page, `?before=`) / envoyer |
+| POST | `/api/conversations/{id}/read` | participants | Marquer comme lu |
+| WS | `/ws` | JWT dans `CONNECT` | STOMP, s'abonner à `/user/queue/messages` pour recevoir les messages en direct |
+
 ## Sécurité
 
 | Mesure | Détail |
@@ -81,6 +97,9 @@ Codes d'erreur : `400` données invalides (détail dans `fieldErrors`), `401` no
 | Anti force brute (Bucket4j) | Par IP : 10 connexions/min, 10 inscriptions/h, 30 refresh/min. Par compte : 5 échecs de connexion → blocage 15 min. Réponse `429` + `Retry-After`. |
 | Mots de passe | BCrypt, politique forte (8 à 72 caractères, majuscule, minuscule, chiffre, caractère spécial). |
 | En-têtes HTTP | `Content-Security-Policy`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Permissions-Policy`, `X-Content-Type-Options`, HSTS en HTTPS. |
+| Images (SEC-08) | Photos stockées en GridFS. Format reconnu à sa signature binaire (JPEG, PNG, WebP), 2 Mo maximum, 6 photos de réalisations par prestataire. Servies avec `nosniff` et un cache immuable. |
+| Prix réservés aux membres | Sans compte, l'API ne renvoie qu'un aperçu des services (`locked: true` : titre, catégorie, ville). Filtrer ou trier par prix exige d'être connecté (401). |
+| Messagerie (SEC-09) | Seuls le client et le prestataire d'un fil y accèdent. WebSocket `/ws` (STOMP) authentifié par le JWT dans la trame CONNECT, abonnement limité à `/user/queue/messages`, envoi uniquement par l'API REST. |
 | Profil `prod` | Swagger et `/v3/api-docs` désactivés, pas de seed, aucun détail d'erreur ni stack trace renvoyé. |
 
 ## Organisation du code : Clean Architecture par fonctionnalité

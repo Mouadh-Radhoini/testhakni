@@ -1,11 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
 import { catchError, of, switchMap, tap } from 'rxjs';
 
 import { errorMessage } from '../../core/api-error';
 import { Page, Service, ServiceCategory, ServiceSearch, SortOption } from '../../core/models';
+import { AuthService } from '../../core/services/auth.service';
 import { CatalogService } from '../../core/services/catalog.service';
 import { ServiceCard } from '../../shared/service-card';
 
@@ -18,7 +19,7 @@ const PAGE_SIZE = 12;
  */
 @Component({
   selector: 'app-service-search',
-  imports: [ReactiveFormsModule, ServiceCard],
+  imports: [ReactiveFormsModule, ServiceCard, RouterLink],
   template: `
     <section class="container">
       <h1>Trouver un service</h1>
@@ -41,27 +42,36 @@ const PAGE_SIZE = 12;
           <label for="city">Ville</label>
           <input id="city" formControlName="city" />
         </div>
-        <div class="field price">
-          <label for="minPrice">Prix min</label>
-          <input id="minPrice" type="number" min="0" formControlName="minPrice" />
-        </div>
-        <div class="field price">
-          <label for="maxPrice">Prix max</label>
-          <input id="maxPrice" type="number" min="0" formControlName="maxPrice" />
-        </div>
-        <div class="field">
-          <label for="sort">Trier par</label>
-          <select id="sort" formControlName="sort">
-            <option value="NEWEST">Plus récents</option>
-            <option value="PRICE_ASC">Prix croissant</option>
-            <option value="PRICE_DESC">Prix décroissant</option>
-          </select>
-        </div>
+        @if (auth.isLoggedIn()) {
+          <div class="field price">
+            <label for="minPrice">Prix min</label>
+            <input id="minPrice" type="number" min="0" formControlName="minPrice" />
+          </div>
+          <div class="field price">
+            <label for="maxPrice">Prix max</label>
+            <input id="maxPrice" type="number" min="0" formControlName="maxPrice" />
+          </div>
+          <div class="field">
+            <label for="sort">Trier par</label>
+            <select id="sort" formControlName="sort">
+              <option value="NEWEST">Plus récents</option>
+              <option value="PRICE_ASC">Prix croissant</option>
+              <option value="PRICE_DESC">Prix décroissant</option>
+            </select>
+          </div>
+        }
         <div class="actions row">
           <button class="btn" type="submit">Rechercher</button>
           <button class="btn secondary" type="button" (click)="reset()">Effacer</button>
         </div>
       </form>
+
+      @if (!auth.isLoggedIn()) {
+        <div class="alert info mt" role="note">
+          Les prix et le détail des services sont réservés aux membres.
+          <a routerLink="/register">Créez un compte gratuit</a> ou <a routerLink="/login">connectez-vous</a> pour les voir et filtrer par prix.
+        </div>
+      }
 
       @if (error()) {
         <div class="alert error mt" role="alert">{{ error() }}</div>
@@ -101,6 +111,7 @@ export class ServiceSearchPage {
   private readonly catalog = inject(CatalogService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  protected readonly auth = inject(AuthService);
 
   protected readonly categories = toSignal(this.catalog.categories(), { initialValue: [] });
   protected readonly result = signal<Page<Service> | null>(null);
@@ -170,9 +181,10 @@ export class ServiceSearchPage {
       q: p.get('q') ?? '',
       category: (p.get('category') ?? '') as ServiceCategory | '',
       city: p.get('city') ?? '',
-      minPrice: num('minPrice'),
-      maxPrice: num('maxPrice'),
-      sort: (p.get('sort') ?? 'NEWEST') as SortOption,
+      // Les filtres de prix exigent un compte (le serveur repond 401 sinon) : ignores pour un visiteur
+      minPrice: this.auth.isLoggedIn() ? num('minPrice') : null,
+      maxPrice: this.auth.isLoggedIn() ? num('maxPrice') : null,
+      sort: (this.auth.isLoggedIn() ? (p.get('sort') ?? 'NEWEST') : 'NEWEST') as SortOption,
     };
   }
 
