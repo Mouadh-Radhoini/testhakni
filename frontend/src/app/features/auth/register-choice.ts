@@ -2,34 +2,35 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { Icon } from '../../shared/icon';
+import { TranslatePipe } from '../../core/i18n/i18n';
 
 /** Choix du type de compte avant l'inscription. FE-02 */
 @Component({
   selector: 'app-register-choice',
-  imports: [RouterLink, Icon],
+  imports: [RouterLink, Icon, TranslatePipe],
   template: `
     <section class="container choose">
       <div class="page-head center">
         <div>
-          <h1>Créer un compte</h1>
-          <p>Gratuit, en moins de deux minutes. Choisissez votre profil :</p>
+          <h1>{{ 'auth.chooseTitle' | t }}</h1>
+          <p>{{ 'auth.chooseSub' | t }}</p>
         </div>
       </div>
       <div class="choices">
         <a class="card choice" routerLink="/register/customer">
           <span class="icon-tile big"><app-icon name="home" [size]="28" /></span>
-          <h2>Je suis client</h2>
-          <p class="muted">Je cherche un prestataire et je publie mes demandes.</p>
-          <span class="btn secondary">Créer un compte client</span>
+          <h2>{{ 'auth.customerTitle' | t }}</h2>
+          <p class="muted">{{ 'auth.customerText' | t }}</p>
+          <span class="btn secondary">{{ 'auth.customerBtn' | t }}</span>
         </a>
         <a class="card choice" routerLink="/register/provider">
           <span class="icon-tile accent big"><app-icon name="briefcase" [size]="28" /></span>
-          <h2>Je suis prestataire</h2>
-          <p class="muted">Je propose mes services et je reçois des demandes.</p>
-          <span class="btn">Devenir prestataire</span>
+          <h2>{{ 'auth.providerTitle' | t }}</h2>
+          <p class="muted">{{ 'auth.providerText' | t }}</p>
+          <span class="btn">{{ 'auth.providerBtn' | t }}</span>
         </a>
       </div>
-      <p class="muted mt center">Déjà inscrit ? <a routerLink="/login">Connexion</a></p>
+      <p class="muted mt center">{{ 'auth.already' | t }} <a routerLink="/login">{{ 'nav.login' | t }}</a></p>
     </section>
   `,
   styles: `

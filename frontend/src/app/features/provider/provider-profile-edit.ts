@@ -9,11 +9,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { CatalogService } from '../../core/services/catalog.service';
 import { ProviderService } from '../../core/services/provider.service';
 import { PortfolioManager } from '../../shared/portfolio-manager';
+import { TranslatePipe } from '../../core/i18n/i18n';
 
 /** Creation / modification du profil professionnel (PROV-01 / PROV-02). FE-04 */
 @Component({
   selector: 'app-provider-profile-edit',
-  imports: [ReactiveFormsModule, RouterLink, PortfolioManager],
+  imports: [ReactiveFormsModule, RouterLink, PortfolioManager, TranslatePipe],
   template: `
     <section class="container narrow">
       <div class="row mb">
@@ -78,12 +79,12 @@ import { PortfolioManager } from '../../shared/portfolio-manager';
       </div>
 
       <div class="card mt">
-        <h2>Photos de vos réalisations</h2>
+        <h2>{{ 'portfolio.title' | t }}</h2>
         @if (hasProfile()) {
-          <p class="muted small">Montrez votre travail : elles apparaissent sur votre profil public.</p>
+          <p class="muted small">{{ 'portfolio.hint' | t }}</p>
           <app-portfolio-manager [(photos)]="photos" />
         } @else {
-          <p class="muted small">Enregistrez d'abord votre profil pour pouvoir ajouter des photos.</p>
+          <p class="muted small">{{ 'portfolio.needProfile' | t }}</p>
         }
       </div>
     </section>

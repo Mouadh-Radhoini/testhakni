@@ -13,80 +13,81 @@ import {
 } from '../../core/api-error';
 import { ServiceCategory } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
+import { TranslatePipe } from '../../core/i18n/i18n';
 import { CatalogService } from '../../core/services/catalog.service';
 
 /** Inscription prestataire : champs pro obligatoires (AUTH-03 cote UI). FE-02 */
 @Component({
   selector: 'app-register-provider',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <section class="auth-shell">
       <div class="card auth-card">
-        <h1>Inscription prestataire</h1>
+        <h1>{{ 'auth.providerSignupTitle' | t }}</h1>
         <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
           @if (error()) { <div class="alert error" role="alert">{{ error() }}</div> }
           <div class="form-row">
             <div class="field">
-              <label for="firstName">Prénom</label>
+              <label for="firstName">{{ 'auth.firstName' | t }}</label>
               <input id="firstName" formControlName="firstName" />
               @if (err('firstName'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field">
-              <label for="lastName">Nom</label>
+              <label for="lastName">{{ 'auth.lastName' | t }}</label>
               <input id="lastName" formControlName="lastName" />
               @if (err('lastName'); as e) { <span class="error">{{ e }}</span> }
             </div>
           </div>
           <div class="field">
-            <label for="businessName">Nom commercial</label>
-            <input id="businessName" formControlName="businessName" placeholder="Ex. Karim Plomberie" />
+            <label for="businessName">{{ 'auth.businessName' | t }}</label>
+            <input id="businessName" formControlName="businessName" [placeholder]="'auth.businessPh' | t" />
             @if (err('businessName'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="field">
-            <label for="email">Email</label>
+            <label for="email">{{ 'auth.email' | t }}</label>
             <input id="email" type="email" formControlName="email" autocomplete="email" />
             @if (err('email'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="field">
-            <label for="password">Mot de passe</label>
+            <label for="password">{{ 'auth.password' | t }}</label>
             <input id="password" type="password" formControlName="password" autocomplete="new-password" />
-            <span class="hint">{{ passwordHint }}</span>
+            <span class="hint">{{ 'auth.passwordHint' | t }}</span>
             @if (err('password'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="form-row">
             <div class="field">
-              <label for="phone">Téléphone</label>
+              <label for="phone">{{ 'auth.phone' | t }}</label>
               <input id="phone" formControlName="phone" autocomplete="tel" />
               @if (err('phone'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field">
-              <label for="city">Ville</label>
+              <label for="city">{{ 'auth.city' | t }}</label>
               <input id="city" formControlName="city" />
               @if (err('city'); as e) { <span class="error">{{ e }}</span> }
             </div>
           </div>
           <fieldset class="field">
-            <label>Catégories de services</label>
+            <label>{{ 'auth.categories' | t }}</label>
             <div class="checks">
               @for (c of categories(); track c.code) {
                 <label>
                   <input type="checkbox" [checked]="isSelected(c.code)" (change)="toggle(c.code)" />
-                  {{ c.label }}
+                  {{ ('cat.' + c.code) | t }}
                 </label>
               }
             </div>
             @if (err('categories'); as e) { <span class="error">{{ e }}</span> }
           </fieldset>
           <button class="btn" type="submit" [disabled]="loading()">
-            {{ loading() ? 'Création…' : 'Créer mon compte prestataire' }}
+            {{ (loading() ? 'auth.creating' : 'auth.createPro') | t }}
           </button>
-          <p class="muted small">Vous cherchez un service ? <a routerLink="/register/customer">Inscription client</a></p>
+          <p class="muted small">{{ 'auth.lookingService' | t }} <a routerLink="/register/customer">{{ 'auth.customerSignupTitle' | t }}</a></p>
         </form>
       </div>
       <aside class="auth-aside" aria-hidden="true">
-        <h2>Développez votre activité</h2>
-        <p>Recevez des demandes près de chez vous, proposez votre prix et gagnez en visibilité grâce aux avis.</p>
-        <ul><li>Des prestataires de votre ville</li><li>Plusieurs offres à comparer</li><li>Des avis après chaque prestation</li></ul>
+        <h2>{{ 'auth.providerAsideTitle' | t }}</h2>
+        <p>{{ 'auth.providerAside' | t }}</p>
+        <ul><li>{{ 'auth.bullet1' | t }}</li><li>{{ 'auth.bullet2' | t }}</li><li>{{ 'auth.bullet3' | t }}</li></ul>
       </aside>
     </section>
   `,

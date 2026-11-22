@@ -4,39 +4,40 @@ import { Router, RouterLink } from '@angular/router';
 
 import { controlError, errorMessage } from '../../core/api-error';
 import { AuthService } from '../../core/services/auth.service';
+import { TranslatePipe } from '../../core/i18n/i18n';
 
 /** Connexion. Redirige vers ?returnUrl ou vers l'espace adapte au role. FE-02 */
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <section class="auth-shell">
       <div class="card auth-card">
-        <h1>Connexion</h1>
+        <h1>{{ 'auth.loginTitle' | t }}</h1>
         <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
           @if (error()) {
             <div class="alert error" role="alert">{{ error() }}</div>
           }
           <div class="field">
-            <label for="email">Email</label>
+            <label for="email">{{ 'auth.email' | t }}</label>
             <input id="email" type="email" formControlName="email" autocomplete="email" />
             @if (err('email'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="field">
-            <label for="password">Mot de passe</label>
+            <label for="password">{{ 'auth.password' | t }}</label>
             <input id="password" type="password" formControlName="password" autocomplete="current-password" />
             @if (err('password'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <button class="btn" type="submit" [disabled]="loading()">
-            {{ loading() ? 'Connexion…' : 'Se connecter' }}
+            {{ (loading() ? 'auth.signingIn' : 'auth.signIn') | t }}
           </button>
-          <p class="muted small">Pas encore de compte ? <a routerLink="/register">Inscrivez-vous</a></p>
+          <p class="muted small">{{ 'auth.noAccount' | t }} <a routerLink="/register">{{ 'auth.signUp' | t }}</a></p>
         </form>
       </div>
       <aside class="auth-aside" aria-hidden="true">
-        <h2>Bon retour parmi nous</h2>
-        <p>Retrouvez vos demandes, vos offres et vos réservations en un clin d’œil.</p>
-        <ul><li>Des prestataires de votre ville</li><li>Plusieurs offres à comparer</li><li>Des avis après chaque prestation</li></ul>
+        <h2>{{ 'auth.loginAsideTitle' | t }}</h2>
+        <p>{{ 'auth.loginAside' | t }}</p>
+        <ul><li>{{ 'auth.bullet1' | t }}</li><li>{{ 'auth.bullet2' | t }}</li><li>{{ 'auth.bullet3' | t }}</li></ul>
       </aside>
     </section>
   `,

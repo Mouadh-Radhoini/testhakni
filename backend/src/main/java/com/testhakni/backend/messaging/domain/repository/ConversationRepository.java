@@ -13,7 +13,10 @@ public interface ConversationRepository {
 
     Optional<Conversation> findByRequestAndProvider(String requestId, String providerId);
 
-    /** Cree le fil, ou renvoie celui qui existe deja pour ce couple demande / prestataire. */
+    /** Fil direct (sans demande) entre ce client et ce prestataire. */
+    Optional<Conversation> findDirect(String customerId, String providerId);
+
+    /** Cree le fil, ou renvoie celui qui existe deja pour ce triplet demande / client / prestataire. */
     Conversation openIfAbsent(Conversation conversation);
 
     /** Fils d'un participant, du plus recemment actif au moins actif. */

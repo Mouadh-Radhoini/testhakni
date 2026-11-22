@@ -10,13 +10,14 @@ import { CatalogService } from '../../core/services/catalog.service';
 import { HealthService } from '../../core/services/health.service';
 import { CATEGORY_ICONS, Icon } from '../../shared/icon';
 import { ServiceCard } from '../../shared/service-card';
+import { TranslatePipe } from '../../core/i18n/i18n';
 
 type ApiState = 'loading' | 'up' | 'down';
 
 /** Page d'accueil : recherche, categories, fonctionnement, derniers services, appel aux prestataires. */
 @Component({
   selector: 'app-home',
-  imports: [FormsModule, RouterLink, Icon, ServiceCard],
+  imports: [FormsModule, RouterLink, Icon, ServiceCard, TranslatePipe],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -43,9 +44,9 @@ export class Home implements OnInit {
   protected city = '';
 
   protected readonly steps = [
-    { icon: 'chat', title: 'Décrivez votre besoin', text: 'Publiez une demande en deux minutes : quoi, où et quand.' },
-    { icon: 'inbox', title: 'Comparez les offres', text: 'Les prestataires de votre ville vous envoient leur prix et leur date.' },
-    { icon: 'star', title: 'Réservez et notez', text: "Suivez l'intervention, confirmez la fin, puis laissez votre avis." },
+    { icon: 'chat', title: 'home.step1Title', text: 'home.step1' },
+    { icon: 'inbox', title: 'home.step2Title', text: 'home.step2' },
+    { icon: 'star', title: 'home.step3Title', text: 'home.step3' },
   ] as const;
 
   ngOnInit(): void {

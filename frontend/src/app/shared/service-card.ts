@@ -4,23 +4,24 @@ import { RouterLink } from '@angular/router';
 import { Service } from '../core/models';
 import { CATEGORY_ICONS, Icon } from './icon';
 import { PricePipe } from './price.pipe';
+import { TranslatePipe } from '../core/i18n/i18n';
 
 /** Carte d'un service dans les listes (accueil, recherche, profil prestataire). */
 @Component({
   selector: 'app-service-card',
-  imports: [RouterLink, PricePipe, Icon],
+  imports: [RouterLink, PricePipe, Icon, TranslatePipe],
   template: `
     <a class="service" [routerLink]="['/services', service().id]">
       <div class="top">
         <span class="icon-tile"><app-icon [name]="icon()" [size]="22" /></span>
-        <span class="badge">{{ service().categoryLabel }}</span>
+        <span class="badge">{{ ('cat.' + service().category) | t }}</span>
         @if (service().status !== 'ACTIVE') {
-          <span class="badge" [class]="service().status">{{ service().status === 'INACTIVE' ? 'Masqué' : 'Suspendu' }}</span>
+          <span class="badge" [class]="service().status">{{ (service().status === 'INACTIVE' ? 'card.hidden' : 'card.suspended') | t }}</span>
         }
       </div>
       <h3>{{ service().title }}</h3>
       @if (service().locked) {
-        <p class="desc locked-text">Créez un compte gratuit pour voir la description, le prix et le prestataire.</p>
+        <p class="desc locked-text">{{ 'card.locked' | t }}</p>
       } @else {
         <p class="desc">{{ service().description }}</p>
       }
@@ -32,11 +33,11 @@ import { PricePipe } from './price.pipe';
       </div>
       <div class="foot">
         @if (service().locked || !service().priceType) {
-          <span class="lock"><app-icon name="shield" [size]="15" /> Prix réservé aux membres</span>
+          <span class="lock"><app-icon name="shield" [size]="15" /> {{ 'card.priceLocked' | t }}</span>
         } @else {
           <span class="price">{{ service().price | price: service().priceType! }}</span>
         }
-        <span class="go">Voir <app-icon name="arrow" [size]="16" /></span>
+        <span class="go">{{ 'card.view' | t }} <app-icon name="arrow" [size]="16" class="flip" /></span>
       </div>
     </a>
   `,
@@ -50,7 +51,7 @@ import { PricePipe } from './price.pipe';
     }
     .service:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: #bcd9d0; text-decoration: none; color: inherit; }
     .top { display: flex; align-items: center; gap: 0.55rem; }
-    .top .icon-tile { width: 40px; height: 40px; margin-right: auto; }
+    .top .icon-tile { width: 40px; height: 40px; margin-inline-end: auto; }
     h3 { margin: 0.35rem 0 0; font-size: 1.06rem; }
     .desc { margin: 0; flex: 1; color: var(--c-muted); font-size: 0.9rem;
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

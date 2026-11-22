@@ -4,7 +4,9 @@ import java.time.Instant;
 import java.util.List;
 
 import com.testhakni.backend.booking.domain.repository.BookingRepository;
+import com.testhakni.backend.contact.application.ContactService;
 import com.testhakni.backend.identity.domain.model.AuthenticatedUser;
+import com.testhakni.backend.identity.domain.model.Role;
 import com.testhakni.backend.identity.domain.model.User;
 import com.testhakni.backend.identity.domain.repository.UserRepository;
 import com.testhakni.backend.messaging.application.dto.MessagingViews.ConversationView;
@@ -44,6 +46,7 @@ public class MessagingService {
     private final UserRepository users;
     private final ProviderProfileRepository profiles;
     private final MessagePublisher publisher;
+    private final ContactService contacts;
 
     /** Ouvre (ou retrouve) le fil lie a une offre : le prestataire auteur ou le client de la demande. */
     public ConversationView openForOffer(AuthenticatedUser user, String offerId) {
@@ -65,6 +68,19 @@ public class MessagingService {
         }
         return view(user.id(), conversations.openIfAbsent(Conversation.open(booking.requestId(), booking.customerId(),
                 booking.providerId(), booking.title(), Instant.now())));
+    }
+
+    /** Fil direct avec un contact accepte : discussion sans demande de travail. */
+    public ConversationView openDirect(AuthenticatedUser user, String otherId) {
+        User other = users.findById(otherId).filter(User::isActive)
+                .orElseThrow(() -> DomainException.notFound("Utilisateur introuvable"));
+        if (!contacts.areConnected(user.id(), otherId)) {
+            throw DomainException.forbidden("Ajoutez d'abord cette personne à vos contacts");
+        }
+        boolean iAmCustomer = user.role() == Role.CUSTOMER;
+        String customerId = iAmCustomer ? user.id() : other.getId();
+        String providerId = iAmCustomer ? other.getId() : user.id();
+        return view(user.id(), conversations.openIfAbsent(Conversation.open(null, customerId, providerId, null, Instant.now())));
     }
 
     public List<ConversationView> list(AuthenticatedUser user) {
@@ -116,6 +132,10 @@ public class MessagingService {
         Conversation c = conversations.findById(conversationId)
                 .orElseThrow(() -> DomainException.notFound("Conversation introuvable"));
         if (!c.hasParticipant(user.id())) throw DomainException.forbidden("Conversation privée");
+        // Un fil direct suppose un contact toujours actif (retire = plus de nouveaux echanges ni lecture)
+        if (c.requestId() == null && !contacts.areConnected(c.customerId(), c.providerId())) {
+            throw DomainException.forbidden("Ce contact a été retiré");
+        }
         return c;
     }
 

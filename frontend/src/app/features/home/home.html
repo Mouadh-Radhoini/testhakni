@@ -1,55 +1,52 @@
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-text">
-      <span class="eyebrow"><app-icon name="pin" [size]="16" /> Services à domicile, près de chez vous</span>
-      <h1>Le bon professionnel, <span class="hl">au coin de la rue</span>.</h1>
-      <p class="lead">
-        Plomberie, électricité, ménage, jardinage, cours… Décrivez votre besoin, comparez les offres
-        des prestataires de votre ville et réservez en toute confiance.
-      </p>
+      <span class="eyebrow"><app-icon name="pin" [size]="16" /> {{ 'home.eyebrow' | t }}</span>
+      <h1>{{ 'home.title' | t }} <span class="hl">{{ 'home.titleHl' | t }}</span>.</h1>
+      <p class="lead">{{ 'home.lead' | t }}</p>
 
       <form class="search" (ngSubmit)="search()" role="search">
         <label class="search-field">
           <app-icon name="search" />
-          <span class="sr-only">Service recherché</span>
-          <input name="q" [(ngModel)]="query" placeholder="De quoi avez-vous besoin ?" aria-label="Rechercher un service" />
+          <span class="sr-only">{{ 'home.searchWhat' | t }}</span>
+          <input name="q" [(ngModel)]="query" [placeholder]="'home.searchWhat' | t" [attr.aria-label]="'home.searchWhat' | t" />
         </label>
         <label class="search-field city">
           <app-icon name="pin" />
-          <span class="sr-only">Ville</span>
-          <input name="city" [(ngModel)]="city" placeholder="Ville" aria-label="Ville" />
+          <span class="sr-only">{{ 'home.searchCity' | t }}</span>
+          <input name="city" [(ngModel)]="city" [placeholder]="'home.searchCity' | t" [attr.aria-label]="'home.searchCity' | t" />
         </label>
-        <button class="btn big" type="submit">Rechercher</button>
+        <button class="btn big" type="submit">{{ 'home.search' | t }}</button>
       </form>
 
       <div class="cta">
         @if (!auth.isLoggedIn()) {
-          <a class="btn secondary" routerLink="/register/customer">Je cherche un service</a>
-          <a class="btn ghost" routerLink="/register/provider">Je propose mes services <app-icon name="arrow" [size]="16" /></a>
+          <a class="btn secondary" routerLink="/register/customer">{{ 'home.ctaCustomer' | t }}</a>
+          <a class="btn ghost" routerLink="/register/provider">{{ 'home.ctaProvider' | t }} <app-icon name="arrow" [size]="16" class="flip" /></a>
         } @else if (auth.role() === 'PROVIDER') {
-          <a class="btn secondary" routerLink="/provider/requests">Voir les demandes ouvertes</a>
-          <a class="btn ghost" routerLink="/provider/services">Gérer mes services <app-icon name="arrow" [size]="16" /></a>
+          <a class="btn secondary" routerLink="/provider/requests">{{ 'home.ctaOpenRequests' | t }}</a>
+          <a class="btn ghost" routerLink="/provider/services">{{ 'home.ctaManage' | t }} <app-icon name="arrow" [size]="16" class="flip" /></a>
         } @else if (auth.role() === 'CUSTOMER') {
-          <a class="btn accent" routerLink="/requests/new"><app-icon name="plus" [size]="18" /> Publier une demande</a>
-          <a class="btn ghost" routerLink="/requests">Mes demandes <app-icon name="arrow" [size]="16" /></a>
+          <a class="btn accent" routerLink="/requests/new"><app-icon name="plus" [size]="18" /> {{ 'home.ctaPost' | t }}</a>
+          <a class="btn ghost" routerLink="/requests">{{ 'home.ctaMyRequests' | t }} <app-icon name="arrow" [size]="16" class="flip" /></a>
         }
       </div>
 
       @if (apiState() === 'down') {
-        <p class="api down" role="status">Le service est momentanément indisponible. Réessayez dans un instant.</p>
+        <p class="api down" role="status">{{ 'home.down' | t }}</p>
       }
     </div>
 
     <div class="hero-visual" aria-hidden="true">
       <div class="blob"></div>
-      <div class="tile t1"><span class="icon-tile"><app-icon name="wrench" /></span><span>Plomberie</span></div>
-      <div class="tile t2"><span class="icon-tile accent"><app-icon name="bolt" /></span><span>Électricité</span></div>
-      <div class="tile t3"><span class="icon-tile"><app-icon name="leaf" /></span><span>Jardinage</span></div>
-      <div class="tile t4"><span class="icon-tile accent"><app-icon name="sparkles" /></span><span>Ménage</span></div>
+      <div class="tile t1"><span class="icon-tile"><app-icon name="wrench" /></span><span>{{ 'cat.PLOMBERIE' | t }}</span></div>
+      <div class="tile t2"><span class="icon-tile accent"><app-icon name="bolt" /></span><span>{{ 'cat.ELECTRICITE' | t }}</span></div>
+      <div class="tile t3"><span class="icon-tile"><app-icon name="leaf" /></span><span>{{ 'cat.JARDINAGE' | t }}</span></div>
+      <div class="tile t4"><span class="icon-tile accent"><app-icon name="sparkles" /></span><span>{{ 'cat.MENAGE' | t }}</span></div>
       <div class="offer">
-        <div class="offer-head"><span class="avatar">KP</span><div><strong>Nouvelle offre reçue</strong><small>Intervention demain, 9 h</small></div></div>
-        <div class="offer-row"><span>Réparation de fuite</span><strong>60 DT</strong></div>
-        <span class="btn small">Accepter l'offre</span>
+        <div class="offer-head"><span class="avatar">KP</span><div><strong>{{ 'home.visualOffer' | t }}</strong><small>{{ 'home.visualWhen' | t }}</small></div></div>
+        <div class="offer-row"><span>{{ 'home.visualJob' | t }}</span><strong>60 {{ 'price.currency' | t }}</strong></div>
+        <span class="btn small">{{ 'home.visualAccept' | t }}</span>
       </div>
     </div>
   </div>
@@ -57,28 +54,28 @@
 
 <section class="section">
   <div class="section-head">
-    <h2>Explorez par catégorie</h2>
-    <a routerLink="/services">Tous les services <app-icon name="arrow" [size]="16" /></a>
+    <h2>{{ 'home.categories' | t }}</h2>
+    <a routerLink="/services">{{ 'home.allServices' | t }} <app-icon name="arrow" [size]="16" class="flip" /></a>
   </div>
   <div class="categories">
     @for (c of categories(); track c.code) {
       <a class="category" [routerLink]="['/services']" [queryParams]="{ category: c.code }">
         <span class="icon-tile"><app-icon [name]="icons[c.code]" [size]="22" /></span>
-        <span>{{ c.label }}</span>
+        <span>{{ ('cat.' + c.code) | t }}</span>
       </a>
     }
   </div>
 </section>
 
 <section class="section how">
-  <h2>Comment ça marche</h2>
+  <h2>{{ 'home.how' | t }}</h2>
   <ol class="steps">
     @for (s of steps; track s.title; let i = $index) {
       <li class="step">
         <span class="num">{{ i + 1 }}</span>
         <span class="icon-tile"><app-icon [name]="s.icon" /></span>
-        <h3>{{ s.title }}</h3>
-        <p class="muted">{{ s.text }}</p>
+        <h3>{{ s.title | t }}</h3>
+        <p class="muted">{{ s.text | t }}</p>
       </li>
     }
   </ol>
@@ -87,8 +84,8 @@
 @if (latest().length) {
   <section class="section">
     <div class="section-head">
-      <h2>Derniers services publiés</h2>
-      <a routerLink="/services">Voir plus <app-icon name="arrow" [size]="16" /></a>
+      <h2>{{ 'home.latest' | t }}</h2>
+      <a routerLink="/services">{{ 'home.seeMore' | t }} <app-icon name="arrow" [size]="16" class="flip" /></a>
     </div>
     <div class="grid">
       @for (s of latest(); track s.id) {
@@ -100,21 +97,21 @@
 
 <section class="section trust">
   <div class="trust-item"><span class="icon-tile"><app-icon name="pin" /></span>
-    <div><h3>Des pros de votre ville</h3><p class="muted">Seuls les prestataires de votre zone et de la bonne catégorie voient votre demande.</p></div></div>
+    <div><h3>{{ 'home.trust1Title' | t }}</h3><p class="muted">{{ 'home.trust1' | t }}</p></div></div>
   <div class="trust-item"><span class="icon-tile"><app-icon name="star" /></span>
-    <div><h3>Des avis authentiques</h3><p class="muted">Un avis n'est possible qu'après une prestation confirmée par le client.</p></div></div>
+    <div><h3>{{ 'home.trust2Title' | t }}</h3><p class="muted">{{ 'home.trust2' | t }}</p></div></div>
   <div class="trust-item"><span class="icon-tile"><app-icon name="shield" /></span>
-    <div><h3>Une plateforme modérée</h3><p class="muted">Signalements traités par l'équipe, comptes abusifs suspendus.</p></div></div>
+    <div><h3>{{ 'home.trust3Title' | t }}</h3><p class="muted">{{ 'home.trust3' | t }}</p></div></div>
 </section>
 
 @if (auth.role() !== 'PROVIDER') {
   <section class="band">
     <div class="band-inner">
       <div>
-        <h2>Vous êtes artisan ou indépendant ?</h2>
-        <p>Recevez des demandes près de chez vous, proposez votre prix et développez votre clientèle.</p>
+        <h2>{{ 'home.bandTitle' | t }}</h2>
+        <p>{{ 'home.bandText' | t }}</p>
       </div>
-      <a class="btn accent big" routerLink="/register/provider">Devenir prestataire</a>
+      <a class="btn accent big" routerLink="/register/provider">{{ 'home.bandCta' | t }}</a>
     </div>
   </section>
 }

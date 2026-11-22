@@ -11,61 +11,62 @@ import {
   PHONE_PATTERN,
 } from '../../core/api-error';
 import { AuthService } from '../../core/services/auth.service';
+import { TranslatePipe } from '../../core/i18n/i18n';
 
 /** Inscription client (AUTH-02 cote UI). FE-02 */
 @Component({
   selector: 'app-register-customer',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <section class="auth-shell">
       <div class="card auth-card">
-        <h1>Inscription client</h1>
+        <h1>{{ 'auth.customerSignupTitle' | t }}</h1>
         <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
           @if (error()) { <div class="alert error" role="alert">{{ error() }}</div> }
           <div class="form-row">
             <div class="field">
-              <label for="firstName">Prénom</label>
+              <label for="firstName">{{ 'auth.firstName' | t }}</label>
               <input id="firstName" formControlName="firstName" autocomplete="given-name" />
               @if (err('firstName'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field">
-              <label for="lastName">Nom</label>
+              <label for="lastName">{{ 'auth.lastName' | t }}</label>
               <input id="lastName" formControlName="lastName" autocomplete="family-name" />
               @if (err('lastName'); as e) { <span class="error">{{ e }}</span> }
             </div>
           </div>
           <div class="field">
-            <label for="email">Email</label>
+            <label for="email">{{ 'auth.email' | t }}</label>
             <input id="email" type="email" formControlName="email" autocomplete="email" />
             @if (err('email'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="field">
-            <label for="password">Mot de passe</label>
+            <label for="password">{{ 'auth.password' | t }}</label>
             <input id="password" type="password" formControlName="password" autocomplete="new-password" />
-            <span class="hint">{{ passwordHint }}</span>
+            <span class="hint">{{ 'auth.passwordHint' | t }}</span>
             @if (err('password'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="form-row">
             <div class="field">
-              <label for="phone">Téléphone <span class="muted">(optionnel)</span></label>
+              <label for="phone">{{ 'auth.phone' | t }} <span class="muted">{{ 'auth.optional' | t }}</span></label>
               <input id="phone" formControlName="phone" autocomplete="tel" />
               @if (err('phone'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field">
-              <label for="city">Ville <span class="muted">(optionnel)</span></label>
+              <label for="city">{{ 'auth.city' | t }} <span class="muted">{{ 'auth.optional' | t }}</span></label>
               <input id="city" formControlName="city" />
             </div>
           </div>
           <button class="btn" type="submit" [disabled]="loading()">
-            {{ loading() ? 'Création…' : 'Créer mon compte' }}
+            {{ (loading() ? 'auth.creating' : 'auth.create') | t }}
           </button>
-          <p class="muted small">Vous êtes prestataire ? <a routerLink="/register/provider">Inscription prestataire</a></p>
+          <p class="muted small">{{ 'auth.areProvider' | t }} <a routerLink="/register/provider">{{ 'auth.providerSignupTitle' | t }}</a></p>
         </form>
       </div>
       <aside class="auth-aside" aria-hidden="true">
-        <h2>Trouvez le bon pro, sans stress</h2>
-        <p>Publiez une demande gratuitement et recevez des offres de prestataires de votre ville.</p>
-        <ul><li>Des prestataires de votre ville</li><li>Plusieurs offres à comparer</li><li>Des avis après chaque prestation</li></ul>
+        <h2>{{ 'auth.customerAsideTitle' | t }}</h2>
+        <p>{{ 'auth.customerAside' | t }}</p>
+        <ul><li>{{ 'auth.bullet1' | t }}</li><li>{{ 'auth.bullet2' | t }}</li><li>{{ 'auth.bullet3' | t }}</li></ul>
       </aside>
     </section>
   `,

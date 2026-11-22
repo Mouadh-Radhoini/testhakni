@@ -84,6 +84,13 @@ Codes d'erreur : `400` données invalides (détail dans `fieldErrors`), `401` no
 | POST | `/api/conversations/by-booking/{bookingId}` | participants | Ouvrir / retrouver le fil d'une réservation |
 | GET / POST | `/api/conversations/{id}/messages` | participants | Historique (50 par page, `?before=`) / envoyer |
 | POST | `/api/conversations/{id}/read` | participants | Marquer comme lu |
+| POST | `/api/conversations/with/{userId}` | contact accepté | Ouvrir / retrouver une discussion directe (sans demande de travail) |
+| GET | `/api/contacts` | CUSTOMER, PROVIDER | Mes contacts et demandes en attente |
+| GET | `/api/contacts/pending` | CUSTOMER, PROVIDER | Nombre de demandes reçues en attente |
+| GET | `/api/contacts/with/{userId}` | CUSTOMER, PROVIDER | Ma relation avec cette personne (NONE, PENDING_OUT, PENDING_IN, ACCEPTED, DECLINED) |
+| POST | `/api/contacts` | CUSTOMER, PROVIDER | Demande de contact (`{targetId}`), toujours entre un client et un prestataire |
+| POST | `/api/contacts/{id}/accept` · `/decline` | destinataire | Répondre à une demande |
+| DELETE | `/api/contacts/{id}` | participants | Annuler sa demande ou retirer un contact (ferme la discussion directe) |
 | WS | `/ws` | JWT dans `CONNECT` | STOMP, s'abonner à `/user/queue/messages` pour recevoir les messages en direct |
 
 ## Sécurité

@@ -64,7 +64,7 @@ public class SecurityConfig {
                 // Poignee de main WebSocket : l'authentification se fait sur la trame STOMP CONNECT
                 .requestMatchers("/ws", "/ws/**").permitAll()
                 // Messagerie : clients et prestataires (l'appartenance au fil est verifiee par le service)
-                .requestMatchers("/api/conversations/**").hasAnyRole("CUSTOMER", "PROVIDER")
+                .requestMatchers("/api/conversations/**", "/api/contacts/**").hasAnyRole("CUSTOMER", "PROVIDER")
                 // Prestataire : son profil et ses services
                 .requestMatchers("/api/providers/me/**").hasRole("PROVIDER")
                 .requestMatchers(HttpMethod.GET, "/api/services/mine").hasRole("PROVIDER")

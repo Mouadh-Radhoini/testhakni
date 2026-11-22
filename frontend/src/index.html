@@ -2,15 +2,25 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>LocalServices — Trouvez un professionnel près de chez vous</title>
+  <title>testehkni — Trouvez un professionnel près de chez vous</title>
   <meta name="description" content="Plombiers, électriciens, ménage, jardinage... Comparez les offres de prestataires locaux et réservez en toute confiance.">
   <meta name="theme-color" content="#0f5e4f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Applique theme et langue memorises avant le premier affichage (evite un flash)
+    try {
+      var t = localStorage.getItem('testehkni.theme');
+      if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.dataset.theme = t;
+      var l = localStorage.getItem('testehkni.lang');
+      if (l === 'ar' || l === 'en') { document.documentElement.lang = l; document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr'; }
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <app-root></app-root>

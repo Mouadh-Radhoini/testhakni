@@ -8,14 +8,16 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * Fil de discussion entre le client d'une demande et un prestataire qui y a repondu (une offre).
- * Un seul fil par couple demande / prestataire ; il continue pendant la reservation.
+ * Fil de discussion entre un client et un prestataire :
+ * - lie a une demande (requestId) des qu'une offre existe, et il continue pendant la reservation ;
+ * - ou direct (requestId null) entre deux contacts acceptes, sans demande de travail.
+ * Un seul fil par triplet demande / client / prestataire.
  *
  * @param customerReadAt derniere lecture par le client (calcul des non-lus)
  * @param providerReadAt derniere lecture par le prestataire
  */
 @Document("conversations")
-@CompoundIndex(name = "request_provider_unique", def = "{'requestId': 1, 'providerId': 1}", unique = true)
+@CompoundIndex(name = "request_pair_unique", def = "{'requestId': 1, 'customerId': 1, 'providerId': 1}", unique = true)
 public record Conversation(
         @Id String id,
         String requestId,

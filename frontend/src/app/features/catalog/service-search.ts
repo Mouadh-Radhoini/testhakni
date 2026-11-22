@@ -9,6 +9,7 @@ import { Page, Service, ServiceCategory, ServiceSearch, SortOption } from '../..
 import { AuthService } from '../../core/services/auth.service';
 import { CatalogService } from '../../core/services/catalog.service';
 import { ServiceCard } from '../../shared/service-card';
+import { TranslatePipe } from '../../core/i18n/i18n';
 
 const PAGE_SIZE = 12;
 
@@ -19,68 +20,68 @@ const PAGE_SIZE = 12;
  */
 @Component({
   selector: 'app-service-search',
-  imports: [ReactiveFormsModule, ServiceCard, RouterLink],
+  imports: [ReactiveFormsModule, ServiceCard, RouterLink, TranslatePipe],
   template: `
     <section class="container">
-      <h1>Trouver un service</h1>
+      <h1>{{ 'search.title' | t }}</h1>
 
       <form class="card filters" [formGroup]="form" (ngSubmit)="apply()">
         <div class="field grow">
-          <label for="q">Mot-clé</label>
-          <input id="q" formControlName="q" placeholder="fuite, ménage, peinture…" />
+          <label for="q">{{ 'search.keyword' | t }}</label>
+          <input id="q" formControlName="q" [placeholder]="'search.keywordPh' | t" />
         </div>
         <div class="field">
-          <label for="category">Catégorie</label>
+          <label for="category">{{ 'search.category' | t }}</label>
           <select id="category" formControlName="category">
-            <option value="">Toutes</option>
+            <option value="">{{ 'search.all' | t }}</option>
             @for (c of categories(); track c.code) {
-              <option [value]="c.code">{{ c.label }}</option>
+              <option [value]="c.code">{{ ('cat.' + c.code) | t }}</option>
             }
           </select>
         </div>
         <div class="field">
-          <label for="city">Ville</label>
+          <label for="city">{{ 'search.city' | t }}</label>
           <input id="city" formControlName="city" />
         </div>
         @if (auth.isLoggedIn()) {
           <div class="field price">
-            <label for="minPrice">Prix min</label>
+            <label for="minPrice">{{ 'search.minPrice' | t }}</label>
             <input id="minPrice" type="number" min="0" formControlName="minPrice" />
           </div>
           <div class="field price">
-            <label for="maxPrice">Prix max</label>
+            <label for="maxPrice">{{ 'search.maxPrice' | t }}</label>
             <input id="maxPrice" type="number" min="0" formControlName="maxPrice" />
           </div>
           <div class="field">
-            <label for="sort">Trier par</label>
+            <label for="sort">{{ 'search.sortBy' | t }}</label>
             <select id="sort" formControlName="sort">
-              <option value="NEWEST">Plus récents</option>
-              <option value="PRICE_ASC">Prix croissant</option>
-              <option value="PRICE_DESC">Prix décroissant</option>
+              <option value="NEWEST">{{ 'search.newest' | t }}</option>
+              <option value="PRICE_ASC">{{ 'search.priceAsc' | t }}</option>
+              <option value="PRICE_DESC">{{ 'search.priceDesc' | t }}</option>
             </select>
           </div>
         }
         <div class="actions row">
-          <button class="btn" type="submit">Rechercher</button>
-          <button class="btn secondary" type="button" (click)="reset()">Effacer</button>
+          <button class="btn" type="submit">{{ 'search.submit' | t }}</button>
+          <button class="btn secondary" type="button" (click)="reset()">{{ 'search.clear' | t }}</button>
         </div>
       </form>
 
       @if (!auth.isLoggedIn()) {
         <div class="alert info mt" role="note">
-          Les prix et le détail des services sont réservés aux membres.
-          <a routerLink="/register">Créez un compte gratuit</a> ou <a routerLink="/login">connectez-vous</a> pour les voir et filtrer par prix.
+          {{ 'search.membersOnly' | t }}
+          <a routerLink="/register">{{ 'search.createAccount' | t }}</a> · <a routerLink="/login">{{ 'nav.login' | t }}</a>
         </div>
       }
 
       @if (error()) {
         <div class="alert error mt" role="alert">{{ error() }}</div>
       } @else if (loading()) {
-        <p class="muted mt">Recherche en cours…</p>
+        <p class="muted mt">{{ 'search.loading' | t }}</p>
       } @else if (result(); as r) {
-        <p class="muted mt">{{ r.totalElements }} service(s) trouvé(s)</p>
+        <p class="muted mt">{{ 'search.count' | t: { n: r.totalElements } }}</p>
         @if (r.content.length === 0) {
-          <div class="card empty">Aucun service ne correspond à votre recherche. Essayez d'élargir les filtres.</div>
+          <div class="card empty">{{ 'search.none' | t }}</div>
         } @else {
           <div class="grid">
             @for (s of r.content; track s.id) {
@@ -88,10 +89,10 @@ const PAGE_SIZE = 12;
             }
           </div>
           @if (r.totalPages > 1) {
-            <nav class="row pager" aria-label="Pagination">
-              <button class="btn secondary small" [disabled]="r.first" (click)="goTo(r.page - 1)">← Précédent</button>
-              <span class="muted small">Page {{ r.page + 1 }} / {{ r.totalPages }}</span>
-              <button class="btn secondary small" [disabled]="r.last" (click)="goTo(r.page + 1)">Suivant →</button>
+            <nav class="row pager" [attr.aria-label]="'search.pagination' | t">
+              <button class="btn secondary small" [disabled]="r.first" (click)="goTo(r.page - 1)"><span class="flip">←</span> {{ 'search.prev' | t }}</button>
+              <span class="muted small">{{ 'search.page' | t: { p: r.page + 1, total: r.totalPages } }}</span>
+              <button class="btn secondary small" [disabled]="r.last" (click)="goTo(r.page + 1)">{{ 'search.next' | t }} <span class="flip">→</span></button>
             </nav>
           }
         }

@@ -11,7 +11,7 @@ import { Feedback, PageState } from './page-state';
 
 @Component({
   imports: [Feedback, RouterLink, DatePipe, ReactiveFormsModule],
-  styles: `.grow-title { flex: 1; margin: 0; } .badge { margin-left: auto; }`,
+  styles: `.grow-title { flex: 1; margin: 0; } .badge { margin-inline-start: auto; }`,
   template: `<section class="container">
     <h1>{{ id() ? 'Détail de la réservation' : 'Mes réservations' }}</h1>
     <app-feedback [state]="state" />

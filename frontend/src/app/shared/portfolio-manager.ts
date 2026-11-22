@@ -3,18 +3,19 @@ import { Component, inject, model, signal } from '@angular/core';
 import { errorMessage } from '../core/api-error';
 import { ProviderService } from '../core/services/provider.service';
 import { Icon } from './icon';
+import { TranslatePipe } from '../core/i18n/i18n';
 import { IMAGE_ACCEPT, imageProblem, takeFile } from './image-upload';
 
 /** Galerie de realisations du prestataire connecte : ajout (6 max) et suppression. */
 @Component({
   selector: 'app-portfolio-manager',
-  imports: [Icon],
+  imports: [Icon, TranslatePipe],
   template: `
     <div class="gallery">
       @for (url of photos(); track url) {
         <figure>
-          <img [src]="url" alt="Réalisation" loading="lazy" />
-          <button type="button" class="remove" [disabled]="busy()" (click)="remove(url)" aria-label="Supprimer cette photo">
+          <img [src]="url" [alt]="'portfolio.alt' | t" loading="lazy" />
+          <button type="button" class="remove" [disabled]="busy()" (click)="remove(url)" [attr.aria-label]="'portfolio.remove' | t">
             <app-icon name="close" [size]="16" />
           </button>
         </figure>
@@ -22,19 +23,19 @@ import { IMAGE_ACCEPT, imageProblem, takeFile } from './image-upload';
       @if (photos().length < max) {
         <label class="add" [class.disabled]="busy()">
           <app-icon name="plus" [size]="26" />
-          <span>{{ busy() ? 'Envoi…' : 'Ajouter une photo' }}</span>
+          <span>{{ (busy() ? 'portfolio.sending' : 'portfolio.add') | t }}</span>
           <input type="file" class="sr-only" [accept]="accept" [disabled]="busy()" (change)="pick($event)" />
         </label>
       }
     </div>
-    <p class="muted small">{{ photos().length }} / {{ max }} photos · JPEG, PNG ou WebP, 2 Mo maximum.</p>
+    <p class="muted small">{{ 'portfolio.count' | t: { n: photos().length, max: max } }}</p>
     @if (error()) { <div class="alert error" role="alert">{{ error() }}</div> }
   `,
   styles: `
     .gallery { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
     figure { position: relative; margin: 0; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; background: var(--c-surface-2); }
     img { width: 100%; height: 100%; object-fit: cover; }
-    .remove { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; border: 0;
+    .remove { position: absolute; top: 6px; inset-inline-end: 6px; width: 30px; height: 30px; border-radius: 50%; border: 0;
       background: rgba(16, 35, 30, 0.75); color: #fff; display: grid; place-items: center; cursor: pointer; }
     .remove:hover { background: var(--c-danger); }
     .add { aspect-ratio: 4 / 3; border: 2px dashed var(--c-border-strong); border-radius: 12px; display: flex; flex-direction: column;

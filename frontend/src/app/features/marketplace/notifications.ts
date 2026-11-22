@@ -1,5 +1,6 @@
 import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { Icon } from '../../shared/icon';
+import { tr } from '../../core/i18n/i18n';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { EMPTY, catchError, switchMap, timer } from 'rxjs';
@@ -12,7 +13,7 @@ import { Feedback, PageState } from './page-state';
 @Component({
   selector: 'app-notification-bell',
   imports: [RouterLink, Icon],
-  template: `<a routerLink="/notifications" class="bell" [attr.aria-label]="label()" title="Notifications">
+  template: `<a routerLink="/notifications" class="bell" [attr.aria-label]="label()" [attr.title]="label()">
     <app-icon name="bell" />
     @if (count()) {
       <span class="dot">{{ count() > 9 ? '9+' : count() }}</span>
@@ -22,14 +23,14 @@ import { Feedback, PageState } from './page-state';
     .bell { position: relative; display: inline-grid; place-items: center; width: 40px; height: 40px;
       border-radius: 50%; color: var(--c-text); }
     .bell:hover { background: rgba(23, 32, 29, 0.06); color: var(--c-text); }
-    .dot { position: absolute; top: 3px; right: 2px; min-width: 18px; height: 18px; padding: 0 4px;
+    .dot { position: absolute; top: 3px; inset-inline-end: 2px; min-width: 18px; height: 18px; padding: 0 4px;
       border-radius: 999px; background: var(--c-accent); color: #2b1a00; font-size: 0.68rem; font-weight: 800;
       display: grid; place-items: center; border: 2px solid var(--c-surface); }
   `,
 })
 export class NotificationBell {
   protected readonly label = () =>
-    this.count() ? `Notifications (${this.count()} non lues)` : 'Notifications';
+    this.count() ? tr('nav.notificationsUnread', { n: this.count() }) : tr('nav.notifications');
   private readonly auth = inject(AuthService);
   private readonly api = inject(MarketplaceService);
   readonly count = signal(0);

@@ -8,8 +8,8 @@ import { AuthService } from './auth.service';
 
 export interface Conversation {
   id: string;
-  requestId: string;
-  title: string;
+  requestId: string | null;
+  title: string | null;
   otherParticipantId: string;
   otherParticipantName: string;
   otherParticipantAvatarUrl: string | null;
@@ -72,6 +72,11 @@ export class MessagingService {
 
   openForOffer(offerId: string): Observable<Conversation> {
     return this.http.post<Conversation>(`${this.api}/by-offer/${encodeURIComponent(offerId)}`, null);
+  }
+
+  /** Discussion directe avec un contact accepte. */
+  openDirect(userId: string): Observable<Conversation> {
+    return this.http.post<Conversation>(`${this.api}/with/${encodeURIComponent(userId)}`, null);
   }
 
   openForBooking(bookingId: string): Observable<Conversation> {

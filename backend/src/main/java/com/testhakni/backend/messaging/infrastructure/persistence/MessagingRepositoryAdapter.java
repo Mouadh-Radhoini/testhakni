@@ -43,14 +43,36 @@ class MessagingRepositoryAdapter implements ConversationRepository, MessageRepos
     }
 
     @Override
+    public Optional<Conversation> findDirect(String customerId, String providerId) {
+        return findSame(null, customerId, providerId);
+    }
+
+    @Override
     public Conversation openIfAbsent(Conversation conversation) {
-        var existing = findByRequestAndProvider(conversation.requestId(), conversation.providerId());
+        var existing = findSame(conversation.requestId(), conversation.customerId(), conversation.providerId());
         if (existing.isPresent()) return existing.get();
         try {
             return mongo.insert(conversation);
         } catch (DuplicateKeyException race) {
             // Deux ouvertures simultanees : l'index unique garantit un seul fil, on renvoie le gagnant
-            return findByRequestAndProvider(conversation.requestId(), conversation.providerId()).orElseThrow();
+            return findSame(conversation.requestId(), conversation.customerId(), conversation.providerId()).orElseThrow();
+        }
+    }
+
+    private Optional<Conversation> findSame(String requestId, String customerId, String providerId) {
+        return Optional.ofNullable(mongo.findOne(Query.query(Criteria.where("requestId").is(requestId)
+                .and("customerId").is(customerId).and("providerId").is(providerId)), Conversation.class));
+    }
+
+    /**
+     * Migration : l'ancien index unique (demande, prestataire) empecherait plusieurs fils directs
+     * (demande nulle) pour un meme prestataire. On le supprime s'il existe encore.
+     */
+    @jakarta.annotation.PostConstruct
+    void dropLegacyIndex() {
+        var indexes = mongo.indexOps(Conversation.class);
+        if (indexes.getIndexInfo().stream().anyMatch(i -> "request_provider_unique".equals(i.getName()))) {
+            indexes.dropIndex("request_provider_unique");
         }
     }
 

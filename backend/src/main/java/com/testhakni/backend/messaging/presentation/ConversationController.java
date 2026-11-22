@@ -59,6 +59,13 @@ public class ConversationController {
         return messaging.openForBooking(me, bookingId);
     }
 
+    @Operation(summary = "Ouvrir une discussion directe avec un contact accepte")
+    @PostMapping("/with/{userId}")
+    public ConversationView openDirect(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser me,
+                                       @PathVariable String userId) {
+        return messaging.openDirect(me, userId);
+    }
+
     @Operation(summary = "Detail d'une conversation")
     @GetMapping("/{id}")
     public ConversationView get(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser me,

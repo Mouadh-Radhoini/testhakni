@@ -8,28 +8,30 @@ import { errorMessage } from '../../core/api-error';
 import { AuthService } from '../../core/services/auth.service';
 import { ChatMessage, Conversation, MessagingService } from '../../core/services/messaging.service';
 import { Icon } from '../../shared/icon';
+import { TranslatePipe } from '../../core/i18n/i18n';
+import { LocalDatePipe } from '../../shared/local-date.pipe';
 
 /** Messagerie : liste des conversations et fil de discussion en temps reel. */
 @Component({
   selector: 'app-messages',
-  imports: [RouterLink, RouterLinkActive, FormsModule, DatePipe, Icon],
+  imports: [RouterLink, RouterLinkActive, FormsModule, DatePipe, Icon, TranslatePipe, LocalDatePipe],
   template: `
     <section class="container">
       <div class="page-head">
         <div>
-          <h1>Messages</h1>
-          <p>Échangez avec {{ auth.role() === 'PROVIDER' ? 'vos clients' : 'les prestataires' }} avant et pendant une prestation.</p>
+          <h1>{{ 'chat.title' | t }}</h1>
+          <p>{{ (auth.role() === 'PROVIDER' ? 'chat.subProvider' : 'chat.subCustomer') | t }}</p>
         </div>
         <span class="spacer"></span>
         <span class="live" [class.on]="messaging.connected()">
-          <span class="dot"></span>{{ messaging.connected() ? 'Temps réel actif' : 'Reconnexion…' }}
+          <span class="dot"></span>{{ (messaging.connected() ? 'chat.live' : 'chat.reconnecting') | t }}
         </span>
       </div>
 
       @if (error()) { <div class="alert error" role="alert">{{ error() }}</div> }
 
       <div class="chat" [class.has-thread]="!!id()">
-        <aside class="inbox card" aria-label="Conversations">
+        <aside class="inbox card" [attr.aria-label]="'chat.conversations' | t">
           @for (c of conversations(); track c.id) {
             <a class="conv" [routerLink]="['/messages', c.id]" routerLinkActive="active">
               @if (c.otherParticipantAvatarUrl) {
@@ -40,21 +42,19 @@ import { Icon } from '../../shared/icon';
               <span class="conv-text">
                 <span class="conv-top">
                   <strong>{{ c.otherParticipantName }}</strong>
-                  @if (c.lastMessageAt) { <small>{{ c.lastMessageAt | date: 'dd/MM HH:mm' }}</small> }
+                  @if (c.lastMessageAt) { <small>{{ c.lastMessageAt | localDate: 'dd/MM HH:mm' }}</small> }
                 </span>
-                <span class="conv-title">{{ c.title }}</span>
-                <span class="conv-preview">{{ c.lastMessagePreview || 'Aucun message pour le moment' }}</span>
+                <span class="conv-title">{{ c.title || ('chat.direct' | t) }}</span>
+                <span class="conv-preview">{{ c.lastMessagePreview || ('chat.noMessage' | t) }}</span>
               </span>
               @if (c.unread) { <span class="count">{{ c.unread }}</span> }
             </a>
           } @empty {
             <div class="empty-inbox">
               <app-icon name="chat" [size]="28" />
-              <p>Aucune conversation.</p>
+              <p>{{ 'chat.empty' | t }}</p>
               <p class="small muted">
-                {{ auth.role() === 'PROVIDER'
-                  ? 'Envoyez une offre sur une demande ouverte, puis écrivez au client.'
-                  : 'Quand un prestataire répond à votre demande, vous pouvez lui écrire depuis la liste des offres.' }}
+                {{ (auth.role() === 'PROVIDER' ? 'chat.emptyProvider' : 'chat.emptyCustomer') | t }}
               </p>
             </div>
           }
@@ -63,39 +63,39 @@ import { Icon } from '../../shared/icon';
         <div class="thread card">
           @if (current(); as c) {
             <header class="thread-head">
-              <a class="back btn ghost small" routerLink="/messages" aria-label="Retour aux conversations">←</a>
+              <a class="back btn ghost small" routerLink="/messages" [attr.aria-label]="'chat.back' | t"><span class="flip">←</span></a>
               <div>
                 <strong>{{ c.otherParticipantName }}</strong>
-                <small>{{ c.title }}</small>
+                <small>{{ c.title || ('chat.direct' | t) }}</small>
               </div>
             </header>
 
             <div class="scroll" #scroller>
               @if (hasMore()) {
-                <button class="btn ghost small more" type="button" (click)="loadOlder()">Messages précédents</button>
+                <button class="btn ghost small more" type="button" (click)="loadOlder()">{{ 'chat.older' | t }}</button>
               }
               @for (m of messages(); track m.id) {
                 <div class="bubble" [class.mine]="m.senderId === auth.user()?.id">
                   <p>{{ m.body }}</p>
-                  <time>{{ m.sentAt | date: 'dd/MM HH:mm' }}</time>
+                  <time>{{ m.sentAt | localDate: 'dd/MM HH:mm' }}</time>
                 </div>
               } @empty {
-                <p class="muted small hint">Écrivez le premier message : précisez vos disponibilités, l'accès, les détails…</p>
+                <p class="muted small hint">{{ 'chat.first' | t }}</p>
               }
             </div>
 
             <form class="composer" (ngSubmit)="send()">
-              <label class="sr-only" for="msg">Votre message</label>
+              <label class="sr-only" for="msg">{{ 'chat.yourMessage' | t }}</label>
               <textarea id="msg" name="msg" rows="1" maxlength="2000" [(ngModel)]="draft"
-                        placeholder="Écrire un message…" (keydown.enter)="onEnter($event)"></textarea>
-              <button class="btn" type="submit" [disabled]="!draft.trim() || sending()" aria-label="Envoyer">
-                <app-icon name="arrow" [size]="18" />
+                        [placeholder]="'chat.placeholder' | t" (keydown.enter)="onEnter($event)"></textarea>
+              <button class="btn" type="submit" [disabled]="!draft.trim() || sending()" [attr.aria-label]="'chat.send' | t">
+                <app-icon name="arrow" [size]="18" class="flip" />
               </button>
             </form>
           } @else {
             <div class="placeholder">
               <span class="icon-tile"><app-icon name="chat" [size]="26" /></span>
-              <p>Choisissez une conversation pour l'afficher.</p>
+              <p>{{ 'chat.pick' | t }}</p>
             </div>
           }
         </div>
@@ -133,12 +133,12 @@ import { Icon } from '../../shared/icon';
     .scroll { flex: 1; overflow-y: auto; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; background: var(--c-surface-2); }
     .more { align-self: center; }
     .hint { text-align: center; margin: auto; max-width: 320px; }
-    .bubble { max-width: min(75%, 520px); padding: 0.6rem 0.85rem; border-radius: 16px 16px 16px 4px;
+    .bubble { max-width: min(75%, 520px); padding: 0.6rem 0.85rem; border-radius: 16px; border-end-start-radius: 4px;
       background: var(--c-surface); border: 1px solid var(--c-border); align-self: flex-start; }
     .bubble.mine { align-self: flex-end; background: var(--c-primary); color: #fff; border-color: var(--c-primary);
-      border-radius: 16px 16px 4px 16px; }
+      border-radius: 16px; border-end-end-radius: 4px; }
     .bubble p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .bubble time { display: block; font-size: 0.7rem; opacity: 0.7; margin-top: 0.2rem; text-align: right; }
+    .bubble time { display: block; font-size: 0.7rem; opacity: 0.7; margin-top: 0.2rem; text-align: end; }
     .composer { display: flex; gap: 0.5rem; padding: 0.8rem; border-top: 1px solid var(--c-border); background: var(--c-surface); }
     .composer textarea { min-height: 44px; max-height: 140px; resize: none; border-radius: 22px; padding: 0.65rem 1rem; }
     .composer .btn { width: 46px; height: 46px; padding: 0; flex: none; }
