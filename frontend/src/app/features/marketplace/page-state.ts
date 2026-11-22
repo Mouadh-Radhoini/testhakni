@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef, input } from '@angular/core';
 import { finalize, Observable } from 'rxjs';
 import { errorMessage } from '../../core/api-error';
+import { TranslatePipe } from '../../core/i18n/i18n';
 
 export class PageState {
   readonly loading = signal(false);
@@ -36,9 +37,10 @@ export class PageState {
 
 @Component({
   selector: 'app-feedback',
+  imports: [TranslatePipe],
   template: `
     @if (state().loading()) {
-      <p role="status">Chargement…</p>
+      <p role="status">{{ 'common.loading' | t }}</p>
     }
     @if (state().error()) {
       <p class="alert error" role="alert">{{ state().error() }}</p>

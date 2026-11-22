@@ -12,69 +12,70 @@ import {
 import { AccountService } from '../../core/services/account.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AvatarUploader } from '../../shared/avatar-uploader';
+import { TranslatePipe, tr } from '../../core/i18n/i18n';
 
 /** Mon compte : informations personnelles et mot de passe (AUTH-09 / AUTH-07). FE-04 */
 @Component({
   selector: 'app-account',
-  imports: [ReactiveFormsModule, AvatarUploader],
+  imports: [ReactiveFormsModule, AvatarUploader, TranslatePipe],
   template: `
     <section class="container narrow">
-      <h1>Mon compte</h1>
+      <h1>{{ 'nav.account' | t }}</h1>
 
       <div class="card mb">
         <app-avatar-uploader />
       </div>
 
       <div class="card mb">
-        <h2>Informations personnelles</h2>
+        <h2>{{ 'ac.personal' | t }}</h2>
         <p class="muted small">
-          {{ auth.user()?.email }} · compte <span class="badge">{{ auth.user()?.role }}</span>
+          {{ auth.user()?.email }} · {{ 'ac.accountType' | t }} <span class="badge">{{ ('role.' + auth.user()?.role) | t }}</span>
         </p>
         <form class="form" [formGroup]="profile" (ngSubmit)="saveProfile()" novalidate>
           @if (profileMsg(); as m) { <div class="alert" [class]="m.type">{{ m.text }}</div> }
           <div class="form-row">
             <div class="field">
-              <label for="firstName">Prénom</label>
+              <label for="firstName">{{ 'auth.firstName' | t }}</label>
               <input id="firstName" formControlName="firstName" />
               @if (err(profile, 'firstName'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field">
-              <label for="lastName">Nom</label>
+              <label for="lastName">{{ 'auth.lastName' | t }}</label>
               <input id="lastName" formControlName="lastName" />
               @if (err(profile, 'lastName'); as e) { <span class="error">{{ e }}</span> }
             </div>
           </div>
           <div class="form-row">
             <div class="field">
-              <label for="phone">Téléphone</label>
+              <label for="phone">{{ 'auth.phone' | t }}</label>
               <input id="phone" formControlName="phone" />
               @if (err(profile, 'phone'); as e) { <span class="error">{{ e }}</span> }
             </div>
             <div class="field">
-              <label for="city">Ville</label>
+              <label for="city">{{ 'search.city' | t }}</label>
               <input id="city" formControlName="city" />
             </div>
           </div>
-          <div><button class="btn" type="submit" [disabled]="saving()">Enregistrer</button></div>
+          <div><button class="btn" type="submit" [disabled]="saving()">{{ 'common.save' | t }}</button></div>
         </form>
       </div>
 
       <div class="card">
-        <h2>Changer de mot de passe</h2>
+        <h2>{{ 'ac.pwdTitle' | t }}</h2>
         <form class="form" [formGroup]="password" (ngSubmit)="changePassword()" novalidate>
           @if (passwordMsg(); as m) { <div class="alert" [class]="m.type">{{ m.text }}</div> }
           <div class="field">
-            <label for="currentPassword">Mot de passe actuel</label>
+            <label for="currentPassword">{{ 'ac.current' | t }}</label>
             <input id="currentPassword" type="password" formControlName="currentPassword" autocomplete="current-password" />
             @if (err(password, 'currentPassword'); as e) { <span class="error">{{ e }}</span> }
           </div>
           <div class="field">
-            <label for="newPassword">Nouveau mot de passe</label>
+            <label for="newPassword">{{ 'ac.new' | t }}</label>
             <input id="newPassword" type="password" formControlName="newPassword" autocomplete="new-password" />
-            <span class="hint">{{ passwordHint }}</span>
+            <span class="hint">{{ 'auth.passwordHint' | t }}</span>
             @if (err(password, 'newPassword'); as e) { <span class="error">{{ e }}</span> }
           </div>
-          <div><button class="btn secondary" type="submit">Modifier le mot de passe</button></div>
+          <div><button class="btn secondary" type="submit">{{ 'ac.change' | t }}</button></div>
         </form>
       </div>
     </section>
@@ -129,7 +130,7 @@ export class Account implements OnInit {
     this.account.update({ ...v, phone: v.phone || null, city: v.city || null }).subscribe({
       next: () => {
         this.saving.set(false);
-        this.profileMsg.set({ type: 'success', text: 'Profil mis à jour.' });
+        this.profileMsg.set({ type: 'success', text: tr('ac.msgProfile') });
       },
       error: (e) => {
         this.saving.set(false);
@@ -148,7 +149,7 @@ export class Account implements OnInit {
     this.account.changePassword(currentPassword, newPassword).subscribe({
       next: () => {
         this.password.reset();
-        this.passwordMsg.set({ type: 'success', text: 'Mot de passe modifié.' });
+        this.passwordMsg.set({ type: 'success', text: tr('ac.msgPassword') });
       },
       error: (e) => {
         this.passwordMsg.set({ type: 'error', text: errorMessage(e) });

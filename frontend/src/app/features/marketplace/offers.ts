@@ -5,37 +5,38 @@ import { MarketplaceService } from '../../core/services/marketplace.service';
 import { MessagingService } from '../../core/services/messaging.service';
 import { Icon } from '../../shared/icon';
 import { Feedback, PageState } from './page-state';
+import { TranslatePipe, tr } from '../../core/i18n/i18n';
 
 @Component({
-  imports: [Feedback, Icon],
+  imports: [Feedback, Icon, TranslatePipe],
   styles: `.title { flex: 1; margin: 0; }`,
   template: `<section class="container">
-    <h1>{{ id() ? 'Comparer les offres' : 'Mes offres' }}</h1>
+    <h1>{{ (id() ? 'of.compareTitle' : 'nav.myOffers') | t }}</h1>
     <app-feedback [state]="state" />
     @for (o of offers(); track o.id) {
       <article class="card mb">
         <div class="row">
           <h2 class="title">{{ id() ? o.businessName : o.requestTitle }}</h2>
-          <span class="badge" [class]="o.status">{{ labels[o.status] }}</span>
+          <span class="badge" [class]="o.status">{{ ('status.offer.' + o.status) | t }}</span>
         </div>
-        <p class="muted"><strong class="price">{{ o.price }} DT</strong> · Intervention proposée le {{ o.proposedDate }}</p>
+        <p class="muted"><strong class="price">{{ o.price }} DT</strong> · {{ 'of.proposedOn' | t: { date: o.proposedDate } }}</p>
         <p>{{ o.description }}</p>
         <div class="row">
           @if (o.status === 'SUBMITTED') {
             <button class="btn" [disabled]="state.loading()" (click)="decide(o)">
-              {{ id() ? 'Accepter cette offre' : 'Retirer cette offre' }}
+              {{ (id() ? 'of.accept' : 'of.withdraw') | t }}
             </button>
           }
           @if (o.status !== 'CANCELLED') {
             <button class="btn secondary" type="button" (click)="chat(o)">
-              <app-icon name="chat" [size]="16" /> {{ id() ? 'Discuter avec le prestataire' : 'Écrire au client' }}
+              <app-icon name="chat" [size]="16" /> {{ (id() ? 'chat.withProvider' : 'chat.withCustomer') | t }}
             </button>
           }
         </div>
       </article>
     } @empty {
       @if (!state.loading()) {
-        <p>Aucune offre pour le moment.</p>
+        <p>{{ 'of.none' | t }}</p>
       }
     }
   </section>`,
@@ -68,6 +69,6 @@ export class OffersPage implements OnInit {
             .offers(this.id())
             .subscribe({ next: (list) => this.offers.set(list), error: () => {} }),
       );
-    else this.state.run(this.api.withdraw(o.id), () => this.load(), 'Offre retirée.');
+    else this.state.run(this.api.withdraw(o.id), () => this.load(), tr('of.withdrawn'));
   }
 }

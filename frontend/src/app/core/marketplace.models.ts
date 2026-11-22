@@ -1,3 +1,4 @@
+import { labelTable } from './i18n/labels';
 import { ServiceCategory } from './models';
 
 export interface OpenRequest {
@@ -77,16 +78,8 @@ export interface Report {
   decision: string | null;
 }
 
-export const offerLabels = {
-  SUBMITTED: 'En attente',
-  ACCEPTED: 'Acceptée',
-  REJECTED: 'Refusée',
-  CANCELLED: 'Annulée',
-};
-export const bookingLabels: Record<BookingStatus, string> = {
-  BOOKED: 'Réservée',
-  IN_PROGRESS: 'En cours',
-  AWAITING_CONFIRMATION: 'À confirmer',
-  COMPLETED: 'Terminée',
-  CANCELLED: 'Annulée',
-};
+export const offerLabels = labelTable('status.offer', ['SUBMITTED', 'ACCEPTED', 'REJECTED', 'CANCELLED'] as const);
+export const bookingLabels: Record<BookingStatus, string> = labelTable(
+  'status.booking',
+  ['BOOKED', 'IN_PROGRESS', 'AWAITING_CONFIRMATION', 'COMPLETED', 'CANCELLED'] as const,
+);

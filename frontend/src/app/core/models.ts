@@ -1,4 +1,5 @@
 /** Types partages, alignes sur les DTO du backend Spring Boot. */
+import { labelTable } from './i18n/labels';
 
 export type Role = 'CUSTOMER' | 'PROVIDER' | 'ADMIN';
 export type ServiceCategory =
@@ -160,21 +161,8 @@ export interface ApiError {
   fieldErrors?: Record<string, string>;
 }
 
-export const PRICE_TYPE_LABELS: Record<PriceType, string> = {
-  FIXED: 'Prix fixe',
-  HOURLY: 'Par heure',
-  ON_QUOTE: 'Sur devis',
-};
+export const PRICE_TYPE_LABELS: Record<PriceType, string> = labelTable('priceType', ['FIXED', 'HOURLY', 'ON_QUOTE'] as const);
 
-export const REQUEST_STATUS_LABELS: Record<RequestStatus, string> = {
-  OPEN: 'Ouverte',
-  IN_PROGRESS: 'En cours',
-  COMPLETED: 'Terminée',
-  CANCELLED: 'Annulée',
-};
+export const REQUEST_STATUS_LABELS: Record<RequestStatus, string> = labelTable('status.request', ['OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as const);
 
-export const SERVICE_STATUS_LABELS: Record<ServiceStatus, string> = {
-  ACTIVE: 'Actif',
-  INACTIVE: 'Désactivé',
-  SUSPENDED: 'Suspendu (admin)',
-};
+export const SERVICE_STATUS_LABELS: Record<ServiceStatus, string> = labelTable('status.service', ['ACTIVE', 'INACTIVE', 'SUSPENDED'] as const);

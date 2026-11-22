@@ -5,16 +5,17 @@ import { Reviews } from '../../core/marketplace.models';
 import { AuthService } from '../../core/services/auth.service';
 import { MarketplaceService } from '../../core/services/marketplace.service';
 import { Feedback, PageState } from './page-state';
+import { TranslatePipe, tr } from '../../core/i18n/i18n';
 
 @Component({
   selector: 'app-reviews',
-  imports: [Feedback, DecimalPipe, ReactiveFormsModule],
+  imports: [Feedback, DecimalPipe, ReactiveFormsModule, TranslatePipe],
   template: `<section class="card mt">
-    <h2>Avis vérifiés</h2>
+    <h2>{{ 'rv.title' | t }}</h2>
     <app-feedback [state]="state" />
     @if (result(); as r) {
       @if (r.count) {
-        <p>{{ r.average | number: '1.0-1' }}/5 · {{ r.count }} avis</p>
+        <p>{{ r.average | number: '1.0-1' }}/5 · {{ 'provider.reviewsCount' | t: { n: r.count } }}</p>
       }
       @for (entry of r.reviews; track entry.id) {
         <article>
@@ -22,26 +23,26 @@ import { Feedback, PageState } from './page-state';
           <p>{{ entry.comment }}</p>
           @if (auth.user()) {
             <button class="btn secondary small" (click)="select('REVIEW', entry.id)">
-              Signaler cet avis
+              {{ 'rv.reportReview' | t }}
             </button>
           }
         </article>
       } @empty {
-        <p>Aucun avis publié.</p>
+        <p>{{ 'rv.none' | t }}</p>
       }
     }
     @if (group() === 'services' && auth.user()) {
       <button class="btn secondary small" (click)="select('SERVICE', id())">
-        Signaler le service
+        {{ 'rv.reportService' | t }}
       </button>
     }
     @if (target()) {
       <form class="form mt" [formGroup]="reportForm" (ngSubmit)="report()">
         <label
-          >Motif du signalement<textarea formControlName="reason" maxlength="1000"></textarea>
+          >{{ 'rv.reason' | t }}<textarea formControlName="reason" maxlength="1000"></textarea>
         </label>
         <button class="btn" [disabled]="reason.invalid || state.loading()">
-          Envoyer le signalement
+          {{ 'rv.send' | t }}
         </button>
       </form>
     }
@@ -73,7 +74,7 @@ export class ReviewsPanel implements OnInit {
     this.state.run(
       this.api.report(target.type, target.id, this.reason.value),
       () => this.target.set(null),
-      'Signalement enregistré.',
+      tr('rv.msgSent'),
     );
   }
 }

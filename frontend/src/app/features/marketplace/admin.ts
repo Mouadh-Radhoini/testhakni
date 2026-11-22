@@ -1,11 +1,12 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User, Service, SERVICE_STATUS_LABELS } from '../../core/models';
+import { User, Service } from '../../core/models';
 import { Review, Report } from '../../core/marketplace.models';
+import { I18n, TranslatePipe, tr } from '../../core/i18n/i18n';
 import { Feedback, PageState } from './page-state';
 
 type Section = 'dashboard' | 'users' | 'services' | 'reviews' | 'reports';
@@ -31,33 +32,23 @@ interface Row {
 }
 
 const titles = {
-  dashboard: 'Tableau de bord',
-  users: 'Utilisateurs',
-  services: 'Services',
-  reviews: 'Avis',
-  reports: 'Signalements',
+  dashboard: 'ad.dashboard',
+  users: 'ad.users',
+  services: 'ad.services',
+  reviews: 'ad.reviews',
+  reports: 'ad.reports',
 };
-const metrics: Record<string, string> = {
-  users: 'Utilisateurs',
-  services: 'Services',
-  requests: 'Demandes',
-  offers: 'Offres',
-  bookings: 'Réservations',
-  reviews: 'Avis',
-  openReports: 'Signalements ouverts',
-};
-const ROLES = { CUSTOMER: 'Client', PROVIDER: 'Prestataire', ADMIN: 'Administrateur' } as const;
 const REPORT_STATUS = {
-  OPEN: { text: 'Ouvert', cls: 'OPEN' },
-  RESOLVED: { text: 'Résolu', cls: 'RESOLVED' },
-  DISMISSED: { text: 'Classé sans suite', cls: 'DISMISSED' },
+  OPEN: { key: 'ad.rOpen', cls: 'OPEN' },
+  RESOLVED: { key: 'ad.rResolved', cls: 'RESOLVED' },
+  DISMISSED: { key: 'ad.rDismissed', cls: 'DISMISSED' },
 } as const;
 
-const date = (iso: string) => new Date(iso).toLocaleDateString('fr-FR');
+const formatDate = (iso: string, locale: string) => new Date(iso).toLocaleDateString(locale);
 const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, max - 1) + '…' : text);
 
 @Component({
-  imports: [RouterLink, RouterLinkActive, Feedback, ReactiveFormsModule],
+  imports: [RouterLink, RouterLinkActive, Feedback, ReactiveFormsModule, TranslatePipe],
   styles: `
     .head { display: flex; align-items: flex-start; gap: 0.75rem; }
     .titles { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
@@ -76,28 +67,28 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
     .decision textarea { min-height: 90px; }
   `,
   template: `<section class="container">
-    <nav class="tabs" aria-label="Administration">
+    <nav class="tabs" [attr.aria-label]="'ad.nav' | t">
       @for (key of sections; track key) {
-        <a [routerLink]="['/admin', key]" routerLinkActive="active">{{ titles[key] }}</a>
+        <a [routerLink]="['/admin', key]" routerLinkActive="active">{{ titles[key] | t }}</a>
       }
     </nav>
-    <h1>{{ titles[section] }}</h1>
+    <h1>{{ titles[section] | t }}</h1>
     <app-feedback [state]="state" />
     @if (section === 'users') {
       <div class="filters">
         <label
-          >Rôle<select [formControl]="role" (change)="load()">
-            <option value="">Tous</option>
-            <option value="CUSTOMER">Client</option>
-            <option value="PROVIDER">Prestataire</option>
-            <option value="ADMIN">Administrateur</option>
+          >{{ 'ad.role' | t }}<select [formControl]="role" (change)="load()">
+            <option value="">{{ 'ad.all' | t }}</option>
+            <option value="CUSTOMER">{{ 'role.CUSTOMER' | t }}</option>
+            <option value="PROVIDER">{{ 'role.PROVIDER' | t }}</option>
+            <option value="ADMIN">{{ 'role.ADMIN' | t }}</option>
           </select></label
         >
         <label
-          >État<select [formControl]="status" (change)="load()">
-            <option value="">Tous</option>
-            <option value="ACTIVE">Actif</option>
-            <option value="SUSPENDED">Suspendu</option>
+          >{{ 'ad.state' | t }}<select [formControl]="status" (change)="load()">
+            <option value="">{{ 'ad.all' | t }}</option>
+            <option value="ACTIVE">{{ 'ad.userActive' | t }}</option>
+            <option value="SUSPENDED">{{ 'ad.userSuspended' | t }}</option>
           </select></label
         >
       </div>
@@ -106,7 +97,7 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
       @for (r of rows(); track r.id) {
         @if (r.stat) {
           <article class="card stat-card">
-            <h2>{{ r.title }}</h2>
+            <h2>{{ r.title | t }}</h2>
             <span class="number">{{ r.details }}</span>
           </article>
         } @else {
@@ -114,10 +105,10 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
             <div class="head">
               @if (r.avatar) { <span class="avatar" aria-hidden="true">{{ r.avatar }}</span> }
               <div class="titles">
-                @if (r.kicker) { <span class="badge accent">{{ r.kicker }}</span> }
+                @if (r.kicker) { <span class="badge accent">{{ r.kicker | t }}</span> }
                 <h2>{{ r.title }}</h2>
               </div>
-              @if (r.badge) { <span class="badge" [class]="r.badgeClass">{{ r.badge }}</span> }
+              @if (r.badge) { <span class="badge" [class]="r.badgeClass">{{ r.badge | t }}</span> }
             </div>
             <p class="details">{{ r.details }}</p>
             @if (r.meta) { <p class="meta muted small">{{ r.meta }}</p> }
@@ -126,11 +117,11 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
                 @if (selected() === r.id) {
                   <div class="decision">
                     <label
-                      >Motif de la décision<textarea [formControl]="reason" maxlength="1000"></textarea>
+                      >{{ 'ad.reason' | t }}<textarea [formControl]="reason" maxlength="1000"></textarea>
                     </label>
                     <div class="row">
                       <button class="btn" [disabled]="reason.invalid || state.loading()" (click)="save(r)">
-                        {{ r.action }}
+                        {{ r.action | t }}
                       </button>
                       @if (section === 'reports') {
                         <button
@@ -138,14 +129,14 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
                           [disabled]="reason.invalid || state.loading()"
                           (click)="save(r, true)"
                         >
-                          Classer sans suite
+                          {{ 'ad.dismiss' | t }}
                         </button>
                       }
-                      <button class="btn ghost" type="button" (click)="selected.set('')">Annuler</button>
+                      <button class="btn ghost" type="button" (click)="selected.set('')">{{ 'common.cancel' | t }}</button>
                     </div>
                   </div>
                 } @else {
-                  <button class="btn secondary" (click)="select(r)">{{ r.action }}</button>
+                  <button class="btn secondary" (click)="select(r)">{{ r.action | t }}</button>
                 }
               </div>
             }
@@ -153,17 +144,21 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
         }
       } @empty {
         @if (!state.loading()) {
-          <div class="card empty">Aucun résultat.</div>
+          <div class="card empty">{{ 'ad.none' | t }}</div>
         }
       }
     </div>
   </section>`,
 })
-export class AdminPage implements OnInit {
+export class AdminPage {
   readonly titles = titles;
   readonly sections = Object.keys(titles) as Section[];
   readonly section: Section = inject(ActivatedRoute).snapshot.data['section'];
   private readonly http = inject(HttpClient);
+  private readonly i18n = inject(I18n);
+  private date(iso: string): string {
+    return formatDate(iso, this.i18n.locale());
+  }
   private readonly api = environment.apiUrl + '/admin/';
   private readonly url = this.api + this.section;
   readonly state = new PageState();
@@ -175,8 +170,12 @@ export class AdminPage implements OnInit {
     nonNullable: true,
     validators: [Validators.required, Validators.maxLength(1000)],
   });
-  ngOnInit() {
-    this.load();
+  constructor() {
+    // Charge a l'ouverture, puis recharge quand la langue change (les lignes contiennent du texte traduit)
+    effect(() => {
+      this.i18n.lang();
+      this.load();
+    });
   }
   select(row: Row) {
     this.reason.reset();
@@ -192,7 +191,7 @@ export class AdminPage implements OnInit {
             map((data) =>
               Object.entries(data).map(([id, value]) => ({
                 id,
-                title: metrics[id],
+                title: 'ad.m.' + id,
                 details: String(value),
                 stat: true,
               })),
@@ -209,14 +208,14 @@ export class AdminPage implements OnInit {
               id: u.id,
               title: u.firstName + ' ' + u.lastName,
               details: u.email,
-              kicker: ROLES[u.role],
+              kicker: 'role.' + u.role,
               avatar: `${u.firstName?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase(),
-              badge: u.status === 'ACTIVE' ? 'Actif' : 'Suspendu',
+              badge: u.status === 'ACTIVE' ? 'ad.userActive' : 'ad.userSuspended',
               badgeClass: u.status,
-              meta: [u.city, u.createdAt ? 'inscrit le ' + date(u.createdAt) : ''].filter(Boolean).join(' · '),
+              meta: [u.city, u.createdAt ? tr('ad.registered', { date: this.date(u.createdAt) }) : ''].filter(Boolean).join(' · '),
               enabled: u.status !== 'ACTIVE',
               action:
-                u.role === 'ADMIN' ? undefined : u.status === 'ACTIVE' ? 'Suspendre' : 'Activer',
+                u.role === 'ADMIN' ? undefined : u.status === 'ACTIVE' ? 'ad.suspend' : 'ad.activate',
             })),
           ),
         );
@@ -229,12 +228,12 @@ export class AdminPage implements OnInit {
               id: s.id,
               title: s.title,
               details: s.description,
-              kicker: s.categoryLabel,
-              badge: SERVICE_STATUS_LABELS[s.status],
+              kicker: 'cat.' + s.category,
+              badge: 'status.service.' + s.status,
               badgeClass: s.status,
               meta: s.city,
               enabled: s.status !== 'ACTIVE',
-              action: s.status === 'ACTIVE' ? 'Suspendre' : 'Activer',
+              action: s.status === 'ACTIVE' ? 'ad.suspend' : 'ad.activate',
             })),
           ),
         );
@@ -246,12 +245,12 @@ export class AdminPage implements OnInit {
               id: r.id,
               title: '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating) + '  ' + r.rating + '/5',
               details: r.comment,
-              kicker: 'Avis client',
-              badge: r.hidden ? 'Masqué' : 'Visible',
+              kicker: 'ad.reviewKicker',
+              badge: r.hidden ? 'ad.hidden' : 'ad.visible',
               badgeClass: r.hidden ? 'SUSPENDED' : 'ACTIVE',
-              meta: date(r.createdAt),
+              meta: this.date(r.createdAt),
               enabled: r.hidden,
-              action: r.hidden ? 'Rendre visible' : 'Masquer',
+              action: r.hidden ? 'ad.show' : 'ad.hide',
             })),
           ),
         );
@@ -273,19 +272,20 @@ export class AdminPage implements OnInit {
               const status = REPORT_STATUS[r.status];
               return {
                 id: r.id,
-                kicker: isService ? 'Service signalé' : 'Avis signalé',
+                kicker: isService ? 'ad.reportService' : 'ad.reportReview',
                 title: service
                   ? service.title
                   : review
                     ? `« ${excerpt(review.comment)} » (${review.rating}/5)`
-                    : `Contenu introuvable (…${r.targetId.slice(-6)})`,
+                    : tr('ad.missing', { id: r.targetId.slice(-6) }),
                 details: r.reason,
-                badge: status.text,
+                badge: status.key,
                 badgeClass: status.cls,
                 meta:
-                  'Signalé le ' + date(r.createdAt) + (r.decision ? ' · Décision : ' + r.decision : '') +
-                  (found ? '' : ' · contenu supprimé'),
-                action: r.status === 'OPEN' ? 'Résoudre' : undefined,
+                  tr('ad.reportedOn', { date: this.date(r.createdAt) }) +
+                  (r.decision ? ' · ' + tr('ad.decision', { text: r.decision }) : '') +
+                  (found ? '' : ' · ' + tr('ad.deleted')),
+                action: r.status === 'OPEN' ? 'ad.resolve' : undefined,
               } satisfies Row;
             }),
           ),
@@ -305,7 +305,7 @@ export class AdminPage implements OnInit {
         this.selected.set('');
         this.load();
       },
-      'Décision enregistrée.',
+      tr('ad.msgSaved'),
     );
   }
 }

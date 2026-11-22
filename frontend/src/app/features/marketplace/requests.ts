@@ -3,45 +3,46 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OpenRequest } from '../../core/marketplace.models';
 import { MarketplaceService } from '../../core/services/marketplace.service';
 import { Feedback, PageState } from './page-state';
+import { TranslatePipe, tr } from '../../core/i18n/i18n';
 
 @Component({
-  imports: [Feedback, ReactiveFormsModule],
+  imports: [Feedback, ReactiveFormsModule, TranslatePipe],
   template: `<section class="container">
-    <h1>Demandes ouvertes</h1>
+    <h1>{{ 'nav.openRequests' | t }}</h1>
     <app-feedback [state]="state" />
     @for (r of requests(); track r.id) {
       <article class="card mb">
         <h2>{{ r.title }}</h2>
-        <p>{{ r.category }} · {{ r.city }}</p>
+        <p>{{ ('cat.' + r.category) | t }} · {{ r.city }}</p>
         <p>{{ r.description }}</p>
         @if (r.budget != null) {
-          <p>Budget : {{ r.budget }} DT</p>
+          <p>{{ 'or.budget' | t: { n: r.budget } }}</p>
         }
         @if (r.preferredDate) {
-          <p>Date souhaitée : {{ r.preferredDate }}</p>
+          <p>{{ 'or.date' | t: { d: r.preferredDate } }}</p>
         }
         @if (selected() === r.id) {
           <form class="form" [formGroup]="form" (ngSubmit)="submit(r.id)">
             <label
-              >Prix (DT)<input type="number" min="0.01" step="0.01" formControlName="price"
+              >{{ 'sf.price' | t }}<input type="number" min="0.01" step="0.01" formControlName="price"
             /></label>
             <label
-              >Date proposée<input type="date" [min]="today" formControlName="proposedDate"
+              >{{ 'or.proposedDate' | t }}<input type="date" [min]="today" formControlName="proposedDate"
             /></label>
             <label
-              >Description<textarea formControlName="description" maxlength="2000"></textarea>
+              >{{ 'sf.description' | t }}<textarea formControlName="description" maxlength="2000"></textarea>
             </label>
             <button class="btn" [disabled]="form.invalid || state.loading()">
-              Envoyer l’offre
+              {{ 'or.send' | t }}
             </button>
           </form>
         } @else {
-          <button class="btn" (click)="select(r.id)">Proposer une offre</button>
+          <button class="btn" (click)="select(r.id)">{{ 'or.propose' | t }}</button>
         }
       </article>
     } @empty {
       @if (!state.loading()) {
-        <p>Aucune demande dans vos catégories et votre ville.</p>
+        <p>{{ 'or.empty' | t }}</p>
       }
     }
   </section>`,
@@ -69,7 +70,7 @@ export class OpenRequests implements OnInit {
     this.state.run(
       this.api.submit(id, this.form.getRawValue()),
       () => this.selected.set(''),
-      'Offre envoyée.',
+      tr('or.sent'),
     );
   }
 }
