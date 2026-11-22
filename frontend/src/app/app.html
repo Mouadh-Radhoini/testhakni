@@ -1,7 +1,7 @@
 <a class="skip" href="#contenu">{{ 'nav.skip' | t }}</a>
 
 <header class="topbar">
-  <nav class="nav" [attr.aria-label]="'nav.main' | t">
+  <nav class="nav" [class.many]="auth.role() === 'PROVIDER'" [attr.aria-label]="'nav.main' | t">
     <a routerLink="/" class="brand" [attr.aria-label]="'nav.home' | t">
       <span class="logo" aria-hidden="true">
         <svg viewBox="0 0 32 32" width="34" height="34"><rect width="32" height="32" rx="9" fill="currentColor"/>
