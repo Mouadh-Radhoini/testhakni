@@ -73,6 +73,15 @@ class ServiceRequestRepositoryAdapter implements ServiceRequestRepository {
     }
 
     @Override
+    public boolean cancelIfOpen(String id) {
+        var result = mongo.updateFirst(
+                Query.query(Criteria.where("_id").is(id).and("status").is(RequestStatus.OPEN)),
+                Update.update("status", RequestStatus.CANCELLED).currentDate("updatedAt"),
+                ServiceRequest.class);
+        return result.getModifiedCount() == 1;
+    }
+
+    @Override
     public long count() {
         return repository.count();
     }

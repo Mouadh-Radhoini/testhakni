@@ -59,6 +59,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Authentification
                 .requestMatchers("/api/auth/**").permitAll()
+                // Stripe appelle cette route sans JWT : la signature Stripe est verifiee par le controleur.
+                .requestMatchers(HttpMethod.POST, "/api/payments/stripe/webhook").permitAll()
                 // Images publiques (photos de profil et de realisations)
                 .requestMatchers(HttpMethod.GET, "/api/media/**").permitAll()
                 // Poignee de main WebSocket : l'authentification se fait sur la trame STOMP CONNECT

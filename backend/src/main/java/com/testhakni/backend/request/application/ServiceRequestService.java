@@ -74,9 +74,12 @@ public class ServiceRequestService {
         if (request.getStatus() != RequestStatus.OPEN) {
             throw DomainException.conflict("Seule une demande ouverte peut etre annulee");
         }
+        if (!requestRepository.cancelIfOpen(requestId)) {
+            throw DomainException.conflict("Seule une demande ouverte peut etre annulee");
+        }
         request.setStatus(RequestStatus.CANCELLED);
         offers.closeRemaining(requestId, OfferStatus.CANCELLED);
-        return RequestResponse.from(requestRepository.save(request));
+        return RequestResponse.from(request);
     }
 
     /** SEC-02 : 404 si inexistante, 403 si elle appartient a un autre client. */

@@ -36,5 +36,8 @@ public interface ServiceRequestRepository {
     /** Transition atomique de statut : true si la demande etait bien dans le statut attendu. */
     boolean changeStatus(String id, RequestStatus expected, RequestStatus target);
 
+    /** Annule atomiquement une demande encore ouverte. */
+    boolean cancelIfOpen(String id);
+
     long count();
 }

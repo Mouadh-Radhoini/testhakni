@@ -69,6 +69,8 @@ export const routes: Routes = [
   { path: 'messages', canActivate: [roleGuard('CUSTOMER','PROVIDER')], title: 'Messages' + T, loadComponent: () => import('./features/messaging/messages').then(m => m.MessagesPage) },
   { path: 'messages/:id', canActivate: [roleGuard('CUSTOMER','PROVIDER')], title: 'Messages' + T, loadComponent: () => import('./features/messaging/messages').then(m => m.MessagesPage) },
   { path: 'notifications', title: 'Notifications' + T, canActivate: [authGuard], loadComponent: () => import('./features/marketplace/notifications').then(m => m.NotificationsPage) },
+  { path: 'payments/success', title: 'Paiement réussi' + T, canActivate: [roleGuard('CUSTOMER')], loadComponent: () => import('./features/payments/payment-result').then(m => m.PaymentSuccessPage) },
+  { path: 'payments/cancel', title: 'Paiement annulé' + T, canActivate: [roleGuard('CUSTOMER')], loadComponent: () => import('./features/payments/payment-result').then(m => m.PaymentCancelPage) },
   { path: 'admin/dashboard', canActivate: [roleGuard('ADMIN')], data: {section:'dashboard'}, title: 'Administration' + T, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
   { path: 'admin/users', canActivate: [roleGuard('ADMIN')], data: {section:'users'}, title: 'Administration' + T, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
   { path: 'admin/services', canActivate: [roleGuard('ADMIN')], data: {section:'services'}, title: 'Administration' + T, loadComponent: () => import('./features/marketplace/admin').then(m => m.AdminPage) },
