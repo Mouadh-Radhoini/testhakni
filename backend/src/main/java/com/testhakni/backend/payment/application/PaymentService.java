@@ -52,15 +52,31 @@ public class PaymentService {
             throw DomainException.badRequest("Montant de réservation invalide");
         }
 
-        payments.findByBookingId(bookingId).ifPresent(existing -> {
-            if (existing.status() == PaymentStatus.PAID) {
+        var existing = payments.findByBookingId(bookingId);
+        if (existing.isPresent()) {
+            Payment previous = existing.get();
+            if (previous.status() == PaymentStatus.PAID) {
                 throw DomainException.conflict("Cette réservation est déjà payée");
             }
-            if (existing.status() == PaymentStatus.PENDING
-                    && existing.stripeCheckoutSessionId() != null) {
-                throw DomainException.conflict("Une session Checkout est déjà active");
+            if (previous.status() == PaymentStatus.PENDING && previous.stripeCheckoutSessionId() != null) {
+                CheckoutGateway.SessionInfo info = checkoutGateway.inspect(previous.stripeCheckoutSessionId());
+                if (info == null) {
+                    info = new CheckoutGateway.SessionInfo(CheckoutGateway.SessionState.UNKNOWN, null);
+                }
+                if (info.state() == CheckoutGateway.SessionState.OPEN && info.url() != null) {
+                    // Session encore valable : on la reprend au lieu d'en creer une seconde
+                    return new CheckoutResponse(previous.id(), bookingId, info.url(),
+                            previous.stripeCheckoutSessionId(), PaymentStatus.PENDING);
+                }
+                if (info.state() == CheckoutGateway.SessionState.EXPIRED) {
+                    // Session expiree chez Stripe : on la ferme, une nouvelle sera creee
+                    payments.markStatusIfAllowed(previous.id(), PaymentStatus.EXPIRED, Instant.now(), null);
+                } else {
+                    // Paiement en cours de confirmation (ou etat inconnu) : ne rien dupliquer
+                    throw DomainException.conflict("Une session Checkout est déjà active");
+                }
             }
-        });
+        }
 
         Instant now = Instant.now();
         Payment payment = new Payment(

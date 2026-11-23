@@ -87,4 +87,28 @@ public class StripeCheckoutGateway implements CheckoutGateway {
             throw new GatewayUnavailableException("Stripe Checkout creation failed");
         }
     }
+
+    @Override
+    public SessionInfo inspect(String sessionId) {
+        if (secretKey.isBlank() || sessionId == null || sessionId.isBlank()) {
+            return new SessionInfo(SessionState.UNKNOWN, null);
+        }
+        try {
+            Stripe.apiKey = secretKey;
+            Session session = Session.retrieve(sessionId);
+            String status = session.getStatus();
+            if ("open".equals(status)) {
+                return new SessionInfo(SessionState.OPEN, session.getUrl());
+            }
+            if ("expired".equals(status)) {
+                return new SessionInfo(SessionState.EXPIRED, null);
+            }
+            if ("complete".equals(status)) {
+                return new SessionInfo(SessionState.COMPLETE, null);
+            }
+            return new SessionInfo(SessionState.UNKNOWN, null);
+        } catch (StripeException ex) {
+            return new SessionInfo(SessionState.UNKNOWN, null);
+        }
+    }
 }

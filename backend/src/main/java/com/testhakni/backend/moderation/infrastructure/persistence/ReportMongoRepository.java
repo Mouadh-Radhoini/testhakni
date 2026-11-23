@@ -8,4 +8,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 interface ReportMongoRepository extends MongoRepository<Report, String> {
 
     long countByStatus(ReportStatus status);
+
+    long countByTargetTypeAndTargetIdAndStatus(com.testhakni.backend.moderation.domain.model.ContentType type, String targetId, ReportStatus status);
 }
