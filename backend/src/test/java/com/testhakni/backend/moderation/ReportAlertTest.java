@@ -56,7 +56,7 @@ class ReportAlertTest {
     void notifiesAdminsOnTheThirdOpenReport() {
         arrange(3);
         admin.report("customer-1", new Signalement(ContentType.SERVICE, "svc-1", "Contenu douteux"));
-        verify(notifications).send(eq("admin-1"), eq("MODERATION"), eq("svc-1"), any());
+        verify(notifications).send(eq("admin-1"), eq("REPORT_ALERT"), eq("svc-1"), any());
     }
 
     @Test

@@ -125,7 +125,7 @@ public class AdminService {
         String what = report.targetType() == ContentType.SERVICE ? "Un service" : "Un avis";
         String message = what + " a reçu " + ALERT_THRESHOLD + " signalements ouverts : à examiner.";
         for (User admin : users.search(Role.ADMIN, null)) {
-            notifications.send(admin.getId(), "MODERATION", report.targetId(), message);
+            notifications.send(admin.getId(), "REPORT_ALERT", report.targetId(), message);
         }
     }
 

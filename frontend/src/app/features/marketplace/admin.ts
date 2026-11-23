@@ -1,4 +1,5 @@
 import { Component, effect, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -33,6 +34,7 @@ interface Row {
   /** Signalement d'un service encore ouvert : permet de suspendre le service ou son prestataire. */
   serviceId?: string;
   providerId?: string;
+  targetId?: string;
   /** Icone et couleur d'une carte du tableau de bord. */
   icon?: IconName;
   tone?: string;
@@ -102,6 +104,12 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
     </nav>
     <h1>{{ titles[section] | t }}</h1>
     <app-feedback [state]="state" />
+    @if (section === 'reports' && target) {
+      <p class="alert info">
+        {{ 'ad.filteredTitle' | t }}
+        <a routerLink="/admin/reports" [queryParams]="{}">{{ 'ad.showAllReports' | t }}</a>
+      </p>
+    }
     @if (section === 'users') {
       <div class="filters">
         <label
@@ -195,7 +203,13 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
 export class AdminPage {
   readonly titles = titles;
   readonly sections = Object.keys(titles) as Section[];
-  readonly section: Section = inject(ActivatedRoute).snapshot.data['section'];
+  private readonly route = inject(ActivatedRoute);
+  readonly section: Section = this.route.snapshot.data['section'];
+  /** Identifiant d'un contenu : n'afficher que les signalements qui le concernent (lien depuis une notification). */
+  private readonly query = toSignal(this.route.queryParamMap);
+  get target(): string {
+    return this.query()?.get('target') ?? '';
+  }
   private readonly http = inject(HttpClient);
   private readonly i18n = inject(I18n);
   private date(iso: string): string {
@@ -216,6 +230,7 @@ export class AdminPage {
     // Charge a l'ouverture, puis recharge quand la langue change (les lignes contiennent du texte traduit)
     effect(() => {
       this.i18n.lang();
+      this.query();
       this.load();
     });
   }
@@ -308,7 +323,9 @@ export class AdminPage {
           reviews: this.http.get<Review[]>(this.api + 'reviews'),
         }).pipe(
           map(({ reports, services, reviews }) =>
-            reports.map((r) => {
+            reports
+              .filter((r) => !this.target || r.targetId === this.target)
+              .map((r) => {
               const isService = r.targetType === 'SERVICE';
               const service = isService ? services.find((s) => s.id === r.targetId) : undefined;
               const review = isService ? undefined : reviews.find((x) => x.id === r.targetId);
@@ -330,6 +347,7 @@ export class AdminPage {
                   (r.decision ? ' · ' + tr('ad.decision', { text: r.decision }) : '') +
                   (found ? '' : ' · ' + tr('ad.deleted')),
                 action: r.status === 'OPEN' ? 'ad.resolve' : undefined,
+                targetId: r.targetId,
                 serviceId: r.status === 'OPEN' && service ? service.id : undefined,
                 providerId: r.status === 'OPEN' && service ? service.providerId : undefined,
               } satisfies Row;

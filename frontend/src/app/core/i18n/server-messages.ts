@@ -8,6 +8,8 @@ import { currentLanguage, Lang } from './i18n';
  */
 const EXACT: Record<string, [string, string]> = {
   'Donnees invalides': ['Invalid data', 'بيانات غير صالحة'],
+  'Un service a reçu 3 signalements ouverts : à examiner.': ['A service has received 3 open reports: please review.', 'تلقّت خدمة 3 بلاغات مفتوحة: يرجى المراجعة.'],
+  'Un avis a reçu 3 signalements ouverts : à examiner.': ['A review has received 3 open reports: please review.', 'تلقّى تقييم 3 بلاغات مفتوحة: يرجى المراجعة.'],
   'Email ou mot de passe incorrect': ['Incorrect email or password', 'البريد الإلكتروني أو كلمة المرور غير صحيحة'],
   'Refresh token invalide ou expire': ['Session expired, please log in again', 'انتهت الجلسة، يرجى تسجيل الدخول من جديد'],
   'Compte suspendu. Contactez l\'administrateur.': ['Account suspended. Contact the administrator.', 'الحساب معلّق. تواصل مع المشرف.'],

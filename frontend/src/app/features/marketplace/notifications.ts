@@ -50,7 +50,7 @@ export class NotificationBell {
 }
 
 @Component({
-  imports: [Feedback, DatePipe, TranslatePipe, ServerTextPipe],
+  imports: [Feedback, DatePipe, TranslatePipe, ServerTextPipe, RouterLink],
   template: `<section class="container">
     <h1>{{ 'nav.notifications' | t }}</h1>
     <app-feedback [state]="state" />
@@ -59,6 +59,11 @@ export class NotificationBell {
         <article class="card mb">
           <p>{{ n.message | serverText }}</p>
           <p class="muted">{{ n.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          @if (n.type === 'REPORT_ALERT') {
+            <a class="btn" [routerLink]="['/admin/reports']" [queryParams]="{ target: n.referenceId }">
+              {{ 'nt.seeReports' | t }}
+            </a>
+          }
           @if (!n.readAt) {
             <button class="btn secondary" [disabled]="state.loading()" (click)="read(n)">
               {{ 'nt.markRead' | t }}
