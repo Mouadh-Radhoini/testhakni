@@ -3,6 +3,7 @@ package com.testhakni.backend.moderation.infrastructure.persistence;
 import java.util.List;
 import java.util.Optional;
 
+import com.testhakni.backend.moderation.domain.model.ContentType;
 import com.testhakni.backend.moderation.domain.model.ModerationAction;
 import com.testhakni.backend.moderation.domain.model.Report;
 import com.testhakni.backend.moderation.domain.model.ReportStatus;
@@ -44,6 +45,11 @@ class ModerationRepositoryAdapter implements ReportRepository, ModerationActionR
     @Override
     public long countByStatus(ReportStatus status) {
         return reports.countByStatus(status);
+    }
+
+    @Override
+    public long countByTarget(ContentType type, String targetId, ReportStatus status) {
+        return reports.countByTargetTypeAndTargetIdAndStatus(type, targetId, status);
     }
 
     @Override

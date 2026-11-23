@@ -110,8 +110,23 @@ public class AdminService {
             if (findService(body.targetId()).getStatus() != ServiceStatus.ACTIVE)
                 throw DomainException.notFound("Service introuvable");
         } else if (findReview(body.targetId()).hidden()) throw DomainException.notFound("Avis introuvable");
-        return reports.insert(new Report(null, user, body.targetType(), body.targetId(), body.reason().trim(),
+        Report saved = reports.insert(new Report(null, user, body.targetType(), body.targetId(), body.reason().trim(),
                 ReportStatus.OPEN, Instant.now(), null, null));
+        alertAdminsIfRepeated(saved);
+        return saved;
+    }
+
+    /** Au 3e signalement ouvert sur un meme contenu, les admins sont prevenus (aucune suspension automatique). */
+    private static final long ALERT_THRESHOLD = 3;
+
+    private void alertAdminsIfRepeated(Report report) {
+        long open = reports.countByTarget(report.targetType(), report.targetId(), ReportStatus.OPEN);
+        if (open != ALERT_THRESHOLD) return;
+        String what = report.targetType() == ContentType.SERVICE ? "Un service" : "Un avis";
+        String message = what + " a reçu " + ALERT_THRESHOLD + " signalements ouverts : à examiner.";
+        for (User admin : users.search(Role.ADMIN, null)) {
+            notifications.send(admin.getId(), "MODERATION", report.targetId(), message);
+        }
     }
 
     @Transactional
