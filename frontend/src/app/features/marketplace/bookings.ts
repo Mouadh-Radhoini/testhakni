@@ -8,6 +8,8 @@ import { MarketplaceService } from '../../core/services/marketplace.service';
 import { MessagingService } from '../../core/services/messaging.service';
 import { Router } from '@angular/router';
 import { Feedback, PageState } from './page-state';
+import { PaymentService } from '../../core/services/payment.service';
+import { errorMessage } from '../../core/api-error';
 
 @Component({
   imports: [Feedback, RouterLink, DatePipe, ReactiveFormsModule],
@@ -41,6 +43,11 @@ import { Feedback, PageState } from './page-state';
           @if (auth.role() === 'CUSTOMER' && b.status === 'AWAITING_CONFIRMATION') {
             <button class="btn" [disabled]="state.loading()" (click)="confirm(b)">
               Confirmer la fin des travaux
+            </button>
+          }
+          @if (auth.role() === 'CUSTOMER' && b.status === 'BOOKED') {
+            <button class="btn" [disabled]="paymentLoading()" (click)="pay(b)">
+              {{ paymentLoading() ? 'Redirection vers Stripe...' : 'Payer maintenant' }}
             </button>
           }
           @if (auth.role() === 'CUSTOMER' && b.status === 'COMPLETED' && !b.reviewed) {
@@ -84,6 +91,8 @@ export class BookingsPage implements OnInit {
   readonly labels = bookingLabels;
   private readonly messaging = inject(MessagingService);
   private readonly router = inject(Router);
+  private readonly payments = inject(PaymentService);
+  readonly paymentLoading = signal(false);
   chat(b: Booking) {
     this.state.run(this.messaging.openForBooking(b.id), (c) => this.router.navigate(['/messages', c.id]));
   }
@@ -110,6 +119,18 @@ export class BookingsPage implements OnInit {
       (updated) => this.bookings.set([updated]),
       'Travaux confirmés.',
     );
+  }
+  pay(b: Booking) {
+    this.paymentLoading.set(true);
+    this.payments.checkout(b.id).subscribe({
+      next: (response) => {
+        window.location.assign(response.checkoutUrl);
+      },
+      error: (error) => {
+        this.paymentLoading.set(false);
+        this.state.error.set(errorMessage(error));
+      },
+    });
   }
   review(b: Booking) {
     const value = this.form.getRawValue();
