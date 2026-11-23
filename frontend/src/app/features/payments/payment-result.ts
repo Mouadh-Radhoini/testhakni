@@ -2,23 +2,24 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { errorMessage } from '../../core/api-error';
 import { PaymentService, PaymentStatusResponse } from '../../core/services/payment.service';
+import { TranslatePipe, tr } from '../../core/i18n/i18n';
 
 @Component({
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   template: `
     <section class="container">
       <article class="card">
-        <h1>Paiement réussi</h1>
+        <h1>{{ 'pay.successTitle' | t }}</h1>
         @if (loading()) {
-          <p>Vérification du paiement...</p>
+          <p>{{ 'pay.checking' | t }}</p>
         } @else if (error()) {
           <p class="alert error" role="alert">{{ error() }}</p>
         } @else if (payment()?.status === 'PAID') {
-          <p class="alert success" role="status">Votre paiement a été confirmé.</p>
+          <p class="alert success" role="status">{{ 'pay.confirmed' | t }}</p>
         } @else {
-          <p>Le paiement est en cours de confirmation par Stripe. Cette page ne confirme pas le paiement.</p>
+          <p>{{ 'pay.processing' | t }}</p>
         }
-        <a class="btn secondary" [routerLink]="['/bookings', bookingId()]">Voir la réservation</a>
+        <a class="btn secondary" [routerLink]="['/bookings', bookingId()]">{{ 'pay.viewBooking' | t }}</a>
       </article>
     </section>
   `,
@@ -36,7 +37,7 @@ export class PaymentSuccessPage implements OnInit {
     this.bookingId.set(bookingId);
     if (!bookingId) {
       this.loading.set(false);
-      this.error.set('Réservation introuvable.');
+      this.error.set(tr('pay.notFound'));
       return;
     }
     this.payments.status(bookingId).subscribe({
@@ -53,13 +54,13 @@ export class PaymentSuccessPage implements OnInit {
 }
 
 @Component({
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   template: `
     <section class="container">
       <article class="card">
-        <h1>Paiement annulé</h1>
-        <p>Vous avez annulé le paiement. Aucun paiement n’est confirmé par cette page.</p>
-        <a class="btn" [routerLink]="['/bookings', bookingId()]">Retourner à la réservation</a>
+        <h1>{{ 'pay.cancelTitle' | t }}</h1>
+        <p>{{ 'pay.cancelText' | t }}</p>
+        <a class="btn" [routerLink]="['/bookings', bookingId()]">{{ 'pay.back' | t }}</a>
       </article>
     </section>
   `,

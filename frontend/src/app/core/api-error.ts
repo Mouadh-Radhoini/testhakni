@@ -11,6 +11,9 @@ export function errorMessage(err: unknown): string {
     if (err.status === 0) {
       return tr('err.network');
     }
+    if (err.status === 503) {
+      return tr('err.unavailable');
+    }
     const body = err.error as Partial<ApiError> | null;
     if (body?.message) {
       return serverMessage(body.message);
