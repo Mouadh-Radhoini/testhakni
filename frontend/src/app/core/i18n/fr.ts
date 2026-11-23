@@ -211,6 +211,7 @@ export const FR = {
   'val.invalid': 'Valeur invalide',
   'err.network': "Impossible de joindre le serveur. Vérifiez votre connexion.",
   'err.unexpected': 'Une erreur inattendue est survenue.',
+  'err.unavailable': 'Le paiement n’est pas encore configuré (clés Stripe manquantes côté serveur).',
 
   // ------------------------------------------------------------ compte et photos
   'account.photo': 'Photo de profil',

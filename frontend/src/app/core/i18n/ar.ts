@@ -203,6 +203,7 @@ export const AR: Dictionary = {
   'val.invalid': 'قيمة غير صالحة',
   'err.network': 'تعذّر الاتصال بالخادم. تحقّق من اتصالك.',
   'err.unexpected': 'حدث خطأ غير متوقع.',
+  'err.unavailable': 'خدمة الدفع غير مُعدّة بعد (مفاتيح Stripe غير موجودة على الخادم).',
 
   'account.photo': 'صورة الملف الشخصي',
   'account.photoHint': 'JPEG أو PNG أو WebP، بحد أقصى 2 ميغابايت. تمنح محاوريك الثقة.',
