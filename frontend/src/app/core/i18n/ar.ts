@@ -468,6 +468,8 @@ export const AR: Dictionary = {
   'ad.none': 'لا توجد نتائج.',
   'ad.msgSaved': 'تم تسجيل القرار.',
   'ad.suspend': 'تعليق',
+  'ad.suspendService': 'تعليق الخدمة',
+  'ad.suspendProvider': 'تعليق مقدّم الخدمة',
   'ad.activate': 'تفعيل',
   'ad.hide': 'إخفاء',
   'ad.show': 'إظهار',

@@ -482,6 +482,8 @@ export const FR = {
   'ad.none': 'Aucun résultat.',
   'ad.msgSaved': 'Décision enregistrée.',
   'ad.suspend': 'Suspendre',
+  'ad.suspendService': 'Suspendre le service',
+  'ad.suspendProvider': 'Suspendre le prestataire',
   'ad.activate': 'Activer',
   'ad.hide': 'Masquer',
   'ad.show': 'Rendre visible',

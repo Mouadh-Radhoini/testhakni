@@ -7,6 +7,7 @@ import { environment } from '../../../environments/environment';
 import { User, Service } from '../../core/models';
 import { Review, Report } from '../../core/marketplace.models';
 import { I18n, TranslatePipe, tr } from '../../core/i18n/i18n';
+import { Icon, IconName } from '../../shared/icon';
 import { Feedback, PageState } from './page-state';
 
 type Section = 'dashboard' | 'users' | 'services' | 'reviews' | 'reports';
@@ -29,6 +30,12 @@ interface Row {
   avatar?: string;
   /** Carte de statistique du tableau de bord. */
   stat?: boolean;
+  /** Signalement d'un service encore ouvert : permet de suspendre le service ou son prestataire. */
+  serviceId?: string;
+  providerId?: string;
+  /** Icone et couleur d'une carte du tableau de bord. */
+  icon?: IconName;
+  tone?: string;
 }
 
 const titles = {
@@ -44,11 +51,22 @@ const REPORT_STATUS = {
   DISMISSED: { key: 'ad.rDismissed', cls: 'DISMISSED' },
 } as const;
 
+/** Icone et teinte de chaque indicateur du tableau de bord (couleurs du theme). */
+const METRICS: Record<string, { icon: IconName; tone: string }> = {
+  users: { icon: 'users', tone: 'info' },
+  services: { icon: 'wrench', tone: 'primary' },
+  requests: { icon: 'inbox', tone: 'accent' },
+  offers: { icon: 'briefcase', tone: 'primary' },
+  bookings: { icon: 'calendar', tone: 'success' },
+  reviews: { icon: 'star', tone: 'accent' },
+  openReports: { icon: 'flag', tone: 'danger' },
+};
+
 const formatDate = (iso: string, locale: string) => new Date(iso).toLocaleDateString(locale);
 const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, max - 1) + '…' : text);
 
 @Component({
-  imports: [RouterLink, RouterLinkActive, Feedback, ReactiveFormsModule, TranslatePipe],
+  imports: [RouterLink, RouterLinkActive, Feedback, ReactiveFormsModule, TranslatePipe, Icon],
   styles: `
     .head { display: flex; align-items: flex-start; gap: 0.75rem; }
     .titles { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
@@ -58,9 +76,19 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
     .actions { margin-top: 1rem; }
     .list { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); align-items: start; }
     .list .card { margin: 0; }
-    .stat-card { display: flex; flex-direction: column; gap: 0.2rem; }
+    .stats { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); }
+    .stat-card { display: flex; align-items: center; gap: 1rem; margin: 0; transition: transform 0.15s ease, box-shadow 0.15s ease; --tone-bg: var(--c-primary-soft); --tone-fg: var(--c-primary); }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .stat-card.tone-info { --tone-bg: var(--c-info-soft); --tone-fg: var(--c-info); }
+    .stat-card.tone-accent { --tone-bg: var(--c-accent-soft); --tone-fg: var(--c-accent-dark); }
+    .stat-card.tone-success { --tone-bg: var(--c-success-soft); --tone-fg: var(--c-success); }
+    .stat-card.tone-danger { --tone-bg: var(--c-danger-soft); --tone-fg: var(--c-danger); }
+    .stat-icon { flex: none; width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--tone-bg); color: var(--tone-fg); }
+    .stat-icon app-icon { width: 26px; height: 26px; }
+    .stat-body { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
     .stat-card h2 { margin: 0; font-size: 0.9rem; color: var(--c-muted); font-weight: 650; letter-spacing: 0; }
-    .stat-card .number { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+    .stat-card .number { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+    .stat-link { margin-top: 0.25rem; font-size: 0.85rem; font-weight: 650; }
     .filters { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem; }
     .filters label { min-width: 160px; margin: 0; }
     .decision { display: grid; gap: 0.6rem; margin-top: 0.9rem; }
@@ -93,12 +121,18 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
         >
       </div>
     }
-    <div class="list">
+    <div [class]="section === 'dashboard' ? 'stats' : 'list'">
       @for (r of rows(); track r.id) {
         @if (r.stat) {
-          <article class="card stat-card">
-            <h2>{{ r.title | t }}</h2>
-            <span class="number">{{ r.details }}</span>
+          <article class="card stat-card" [class]="'card stat-card tone-' + r.tone">
+            <span class="stat-icon" aria-hidden="true"><app-icon [name]="r.icon!" [size]="26" /></span>
+            <div class="stat-body">
+              <h2>{{ r.title | t }}</h2>
+              <span class="number">{{ r.details }}</span>
+              @if (r.id === 'openReports') {
+                <a class="stat-link" routerLink="/admin/reports">{{ 'ad.reports' | t }} <span class="flip">→</span></a>
+              }
+            </div>
           </article>
         } @else {
           <article class="card">
@@ -131,6 +165,14 @@ const excerpt = (text: string, max = 70) => (text.length > max ? text.slice(0, m
                         >
                           {{ 'ad.dismiss' | t }}
                         </button>
+                        @if (r.serviceId) {
+                          <button class="btn danger" [disabled]="reason.invalid || state.loading()" (click)="suspendTarget(r, 'service')">
+                            {{ 'ad.suspendService' | t }}
+                          </button>
+                          <button class="btn danger" [disabled]="reason.invalid || state.loading()" (click)="suspendTarget(r, 'provider')">
+                            {{ 'ad.suspendProvider' | t }}
+                          </button>
+                        }
                       }
                       <button class="btn ghost" type="button" (click)="selected.set('')">{{ 'common.cancel' | t }}</button>
                     </div>
@@ -194,6 +236,8 @@ export class AdminPage {
                 title: 'ad.m.' + id,
                 details: String(value),
                 stat: true,
+                icon: (METRICS[id] ?? { icon: 'chart' as IconName }).icon,
+                tone: (METRICS[id] ?? { tone: 'primary' }).tone,
               })),
             ),
           );
@@ -286,6 +330,8 @@ export class AdminPage {
                   (r.decision ? ' · ' + tr('ad.decision', { text: r.decision }) : '') +
                   (found ? '' : ' · ' + tr('ad.deleted')),
                 action: r.status === 'OPEN' ? 'ad.resolve' : undefined,
+                serviceId: r.status === 'OPEN' && service ? service.id : undefined,
+                providerId: r.status === 'OPEN' && service ? service.providerId : undefined,
               } satisfies Row;
             }),
           ),
@@ -293,6 +339,20 @@ export class AdminPage {
         break;
     }
     this.state.run(query, (rows) => this.rows.set(rows));
+  }
+  /** Suspend le service signale ou son prestataire (routes d'administration existantes), puis recharge la liste. */
+  suspendTarget(row: Row, target: 'service' | 'provider') {
+    const id = target === 'service' ? row.serviceId : row.providerId;
+    if (!id) return;
+    const path = target === 'service' ? 'services/' : 'users/';
+    this.state.run(
+      this.http.patch(this.api + path + id, { enabled: false, reason: this.reason.value }),
+      () => {
+        this.selected.set('');
+        this.load();
+      },
+      tr('ad.msgSaved'),
+    );
   }
   save(row: Row, dismiss = false) {
     const decision =

@@ -469,6 +469,8 @@ export const EN: Dictionary = {
   'ad.none': 'No results.',
   'ad.msgSaved': 'Decision saved.',
   'ad.suspend': 'Suspend',
+  'ad.suspendService': 'Suspend the service',
+  'ad.suspendProvider': 'Suspend the provider',
   'ad.activate': 'Activate',
   'ad.hide': 'Hide',
   'ad.show': 'Make visible',
