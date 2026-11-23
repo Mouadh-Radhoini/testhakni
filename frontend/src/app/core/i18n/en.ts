@@ -204,7 +204,7 @@ export const EN: Dictionary = {
   'val.invalid': 'Invalid value',
   'err.network': 'Unable to reach the server. Check your connection.',
   'err.unexpected': 'An unexpected error occurred.',
-  'err.unavailable': 'Payment is not configured yet (Stripe keys are missing on the server).',
+  'err.unavailable': 'Payment is unavailable: check the Stripe key and the currency (STRIPE_CURRENCY) on the server.',
 
   'account.photo': 'Profile photo',
   'account.photoHint': 'JPEG, PNG or WebP, 2 MB max. It reassures the people you deal with.',
