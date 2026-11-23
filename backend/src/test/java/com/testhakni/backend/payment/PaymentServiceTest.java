@@ -3,6 +3,8 @@ package com.testhakni.backend.payment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -95,7 +97,48 @@ class PaymentServiceTest {
                 "tnd", PaymentStatus.PENDING, "cs1", null, Instant.now(), Instant.now(), null);
         when(bookings.findById("booking-1")).thenReturn(Optional.of(booking));
         when(payments.findByBookingId("booking-1")).thenReturn(Optional.of(payment));
+        when(gateway.inspect("cs1"))
+                .thenReturn(new CheckoutGateway.SessionInfo(CheckoutGateway.SessionState.COMPLETE, null));
         assertThrows(DomainException.class, () -> service.checkout(user, "booking-1"));
+    }
+
+    @Test
+    void reusesTheOpenCheckoutSessionInsteadOfRefusing() {
+        Booking booking = booking(new BigDecimal("10.000"), "customer-1");
+        AuthenticatedUser user = new AuthenticatedUser("customer-1", "c@test.dev", Role.CUSTOMER);
+        Payment payment = new Payment("p1", "booking-1", "customer-1", new BigDecimal("10.000"),
+                "tnd", PaymentStatus.PENDING, "cs1", null, Instant.now(), Instant.now(), null);
+        when(bookings.findById("booking-1")).thenReturn(Optional.of(booking));
+        when(payments.findByBookingId("booking-1")).thenReturn(Optional.of(payment));
+        when(gateway.inspect("cs1"))
+                .thenReturn(new CheckoutGateway.SessionInfo(CheckoutGateway.SessionState.OPEN, "https://checkout.test/old"));
+
+        PaymentService.CheckoutResponse response = service.checkout(user, "booking-1");
+
+        assertEquals("https://checkout.test/old", response.checkoutUrl());
+        assertEquals("cs1", response.checkoutSessionId());
+        verify(gateway, never()).createCheckout(any(), any());
+    }
+
+    @Test
+    void createsANewSessionWhenThePreviousOneExpired() {
+        Booking booking = booking(new BigDecimal("10.000"), "customer-1");
+        AuthenticatedUser user = new AuthenticatedUser("customer-1", "c@test.dev", Role.CUSTOMER);
+        Payment payment = new Payment("p1", "booking-1", "customer-1", new BigDecimal("10.000"),
+                "tnd", PaymentStatus.PENDING, "cs1", null, Instant.now(), Instant.now(), null);
+        when(bookings.findById("booking-1")).thenReturn(Optional.of(booking));
+        when(payments.findByBookingId("booking-1")).thenReturn(Optional.of(payment));
+        when(gateway.inspect("cs1"))
+                .thenReturn(new CheckoutGateway.SessionInfo(CheckoutGateway.SessionState.EXPIRED, null));
+        when(payments.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(payments.markCheckoutSessionIfPending(any(), any(), any())).thenReturn(true);
+        when(gateway.createCheckout(any(), any()))
+                .thenReturn(new CheckoutGateway.CheckoutSession("cs2", "https://checkout.test/new", "pi2"));
+
+        PaymentService.CheckoutResponse response = service.checkout(user, "booking-1");
+
+        assertEquals("cs2", response.checkoutSessionId());
+        verify(payments).markStatusIfAllowed(eq("p1"), eq(PaymentStatus.EXPIRED), any(), any());
     }
 
     private Booking booking(BigDecimal price, String customerId) {
